@@ -1,0 +1,53 @@
+﻿@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Authorization
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "User,Administrator")]
+
+@page "/view/{PostId:int}"
+
+<h1>@_post.Title</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        @if (!string.IsNullOrEmpty(_post.ImageFile))
+        {
+            <img src="@_post.ImageFile" class="img-fluid mb-3" style="max-height: 400px;" />
+        }
+
+        <p class="fs-5">@_post.Content</p>
+
+        @if (!string.IsNullOrWhiteSpace(_post.OcrImageText))
+        {
+            <hr />
+            <h5>Extracted OCR Text</h5>
+            <pre>@_post.OcrImageText</pre>
+        }
+    </div>
+</div>
+
+<button @onclick="@(() => NavigationManager.NavigateTo("/"))" class="btn btn-secondary">
+    Back to Home
+</button>
+
+@code {
+    [Parameter] public int PostId { get; set; }
+    private Post _post = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        using var context = new ProjectDBContext();
+        var found = await context.Posts.FindAsync(PostId);
+
+        if (found is not null)
+        {
+            _post = found;
+        }
+        else
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Post not found.");
+            NavigationManager.NavigateTo("/");
+        }
+    }
+}

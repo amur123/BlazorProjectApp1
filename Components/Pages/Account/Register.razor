@@ -1,0 +1,81 @@
+﻿@using BlazorProjectApp1.Data
+@using BlazorProjectApp1.Entities
+@using BlazorProjectApp1.Entities.ViewModel
+@inject NavigationManager NavigationManager
+@inject ProjectDBContext _projectDBContext
+@rendermode InteractiveServer
+
+@page "/register"
+
+<h1>Register Account "@_registerModel.Username"</h1>
+
+<EditForm Model="_registerModel" OnValidSubmit="RegisterAccountAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group mb-3">
+        <label for="username">Username</label>
+        <InputText @bind-Value="_registerModel.Username" class="form-control" id="username" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="password">Password</label>
+        <InputText @bind-Value="_registerModel.Password" class="form-control" id="password" type="password" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="role">Role</label>
+        <InputSelect @bind-Value="_registerModel.Role" class="form-control" id="role">
+            <option value="User">User</option>
+            <option value="Administrator">Administrator</option>
+        </InputSelect>
+    </div>
+
+    <button type="submit" class="btn btn-success">Register</button>
+    <button @onclick="@(() => NavigationManager.NavigateTo("/"))" class="btn btn-secondary ms-2">Cancel</button>
+</EditForm>
+
+@if (!string.IsNullOrWhiteSpace(_message))
+{
+    <div class="alert alert-info mt-3">@_message</div>
+}
+
+@code {
+    private RegisterViewModel _registerModel = new()
+        {
+            Username = "newuser",
+            Password = "password123",
+            Role = "User"
+        };
+
+    private string _message;
+
+    private async Task RegisterAccountAsync()
+    {
+        var exists = _projectDBContext.UserAccounts.Any(u => u.Username == _registerModel.Username);
+
+        if (exists)
+        {
+            _message = $"Username \"{_registerModel.Username}\" already exists.";
+            return;
+        }
+
+        var user = new UserAccount
+            {
+                Username = _registerModel.Username,
+                Password = _registerModel.Password,
+                Role = _registerModel.Role
+            };
+
+        _projectDBContext.UserAccounts.Add(user);
+
+        if (await _projectDBContext.SaveChangesAsync() > 0)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            _message = $"Failed to register account \"{_registerModel.Username}\".";
+        }
+    }
+}

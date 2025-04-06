@@ -1,0 +1,107 @@
+﻿@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Authorization
+@inject IJSRuntime JsRuntime
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "User,Administrator")]
+
+@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Project</h1>
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bolder">Welcome to <span class="text-danger">Blazor Project</span></h2>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <span>You are not logged in. Please <a class="fw-bolder" href="/login">CLICK HERE</a> to login.</span>
+                    </NotAuthorized>
+                    <Authorized Context="auth">
+                        <span>
+                            Logged in as <b>@auth.User.Identity.Name</b>.
+                            <a class="fw-bolder" href="/logoff">CLICK HERE</a> to logoff.
+                        </span>
+
+                        <a href="/create" class="btn btn-success btn-lg bg-opacity-100 my-4">+ Create</a>
+
+                        <table class="table table-responsive table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Id (PK)</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Content</th>
+                                    <th scope="col">CRUD</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (_posts != null)
+                                {
+                                    foreach (var post in _posts)
+                                    {
+                                        <tr>
+                                            <th scope="row">@post.PostId</th>
+                                            <td>@post.Title</td>
+                                            <td>@post.Content</td>
+                                            <td>
+                                                <a href="/view/@post.PostId" class="btn btn-info btn-lg w-100 my-2">
+                                                    View
+                                                </a>
+                                                <a href="/update/@post.PostId" class="btn btn-warning btn-lg w-100 my-2">
+                                                    Update
+                                                </a>
+                                                <button @onclick="() => DeleteConfirmationAsync(post)" class="btn btn-danger btn-lg w-100 my-2">
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Post> _posts = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = new ProjectDBContext();
+
+        _posts = await context.Posts.ToListAsync();
+    }
+
+    private async Task DeletePostAsync(Post postToDelete)
+    {
+        using var context = new ProjectDBContext();
+        context.Posts.Remove(postToDelete);
+
+        if (await context.SaveChangesAsync() > 0)
+        {
+            _posts.Remove(postToDelete);
+        }
+        else
+        {
+            string errorMessage = $"Failed to delete post \"{postToDelete.Title}\"";
+            await JsRuntime.InvokeVoidAsync("alert", errorMessage);
+        }
+    }
+    private async Task DeleteConfirmationAsync(Post postToDelete)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete \"{postToDelete.Title}\"?");
+
+        if (confirmed)
+        {
+            await DeletePostAsync(postToDelete);
+        }
+    }
+}
