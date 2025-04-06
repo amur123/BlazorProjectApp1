@@ -1,1 +1,3 @@
 **/*.razor.css
+Components/Layout/MainLayout.razor.css
+Components/Layout/NavMenu.razor.css
