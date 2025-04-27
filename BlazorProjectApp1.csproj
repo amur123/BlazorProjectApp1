@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EdgeTTS" Version="1.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
       <PrivateAssets>all</PrivateAssets>
@@ -24,10 +25,17 @@
 
 	<ItemGroup>
 	  <Folder Include="wwwroot\images\" />
+	  <Folder Include="wwwroot\audio\" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <None Include="wwwroot\images\IRIS-Logo.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="wwwroot\js\playAudio.js">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 </Project>

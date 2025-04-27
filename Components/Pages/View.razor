@@ -1,5 +1,6 @@
 ﻿@using Microsoft.JSInterop
 @using Microsoft.AspNetCore.Authorization
+@using EdgeTTS
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
@@ -23,6 +24,16 @@
             <hr />
             <h5>Extracted OCR Text</h5>
             <pre>@_post.OcrImageText</pre>
+
+            <button class="btn btn-success mt-2" @onclick="() => ReadOcrTextAsync(_post.OcrImageText)">
+                Play
+            </button>
+            <button class="btn btn-warning mt-2" @onclick="PauseAudioAsync">
+                Pause
+                </button> 
+                <button class="btn btn-danger mt-2" @onclick="StopAudioAsync">
+                    Stop
+                    </button>
         }
     </div>
 </div>
@@ -49,5 +60,33 @@
             await JsRuntime.InvokeVoidAsync("alert", "Post not found.");
             NavigationManager.NavigateTo("/");
         }
+    }
+    private async Task ReadOcrTextAsync(string text)
+    {
+        try
+        {
+            var outputFile = $"wwwroot/audio/tts_output_{Guid.NewGuid()}.mp3";
+
+            var communicate = new Communicate(text, "en-IE-EmilyNeural");      // Voice can be changed here have applied Irish English female voice.
+            await communicate.Save(outputFile);
+
+            var relativePath = outputFile.Replace("wwwroot", "").Replace("\\", "/");
+            var url = NavigationManager.BaseUri.TrimEnd('/') + relativePath;
+
+            await JsRuntime.InvokeVoidAsync("audioPlayer.play", url);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"EdgeTTS error: {ex.Message}");
+            await JsRuntime.InvokeVoidAsync("alert", "TTS Error.");
+        }
+    }
+    private async Task PauseAudioAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("audioPlayer.pause");
+    }
+    private async Task StopAudioAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("audioPlayer.stop");
     }
 }
