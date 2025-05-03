@@ -4,7 +4,7 @@ window.audioPlayer = {
   audio: null,
 
   play: function (url) {
-    if (this.audio) {
+    if (this.audio && this.audio.src === url) {
       this.audio.play() // If paused it continues playing
       return
     }

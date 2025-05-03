@@ -30,10 +30,10 @@
             </button>
             <button class="btn btn-warning mt-2" @onclick="PauseAudioAsync">
                 Pause
-                </button> 
-                <button class="btn btn-danger mt-2" @onclick="StopAudioAsync">
-                    Stop
-                    </button>
+            </button> 
+            <button class="btn btn-danger mt-2" @onclick="StopAudioAsync">
+                Stop
+            </button>
         }
     </div>
 </div>
@@ -61,22 +61,46 @@
             NavigationManager.NavigateTo("/");
         }
     }
+
     private async Task ReadOcrTextAsync(string text)
     {
         try
         {
-            var outputFile = $"wwwroot/audio/tts_output_{Guid.NewGuid()}.mp3";
+            using var context = new ProjectDBContext();     // Creates new database context for each request.
+            var existing = await context.RawAudioData       // Checks to see if audio data already exists for the post.
+                .FirstOrDefaultAsync(audioRecord => audioRecord.PostId == PostId);
 
-            var communicate = new Communicate(text, "en-IE-EmilyNeural");      // Voice can be changed here have applied Irish English female voice.
-            await communicate.Save(outputFile);
+            if (existing is null)       // Audio is only generated no entry exists in the database.
+            {
+                using var memoryStream = new MemoryStream();    // Creates a memory stream to hold the audio data.
+                var communicate = new Communicate(text, "en-IE-EmilyNeural");      // Initialises the EdgeTTS communicate object with text and selectec voice. Voice can be changed here have applied Irish English female voice.
+                await communicate.Stream(AudioStreamHandler);       // Streams the audio data to the memory stream.
+                
+                var newAudioData = new RawAudioData     // Creates a new audio data object to store the audio data in the database.
+                {
+                    PostId = PostId,
+                    AudioId = context.RawAudioData.Count(audioRecord => audioRecord.PostId == PostId) + 1,         // Allows multiple audio files per post with sequential ID per post.
+                        AudioBinaryData = memoryStream.ToArray()    // Saves the binary audio data to the database.
+                };
 
-            var relativePath = outputFile.Replace("wwwroot", "").Replace("\\", "/");
-            var url = NavigationManager.BaseUri.TrimEnd('/') + relativePath;
+                context.RawAudioData.Add(newAudioData);     // Adds the new audio data to the database context for persistency.
+                await context.SaveChangesAsync();
 
+                void AudioStreamHandler(AudioResult ttsStreamData)      // The audio stream handler handles the audio data as it is streamed from the EdgeTTS service.
+                {
+                    if (ttsStreamData.Type == "audio" && ttsStreamData.Data is not null)  // Confrims that the data is audio data and not null before memort stream is written to.
+                    {
+                        ttsStreamData.Data.CopyTo(memoryStream);
+                    }
+                }
+            }
+            // Calls the JavaScript function to play the audio.
+            var url = $"{NavigationManager.BaseUri}audio/{PostId}";
             await JsRuntime.InvokeVoidAsync("audioPlayer.play", url);
         }
         catch (Exception ex)
         {
+            // Displays errors if they occur.
             Console.WriteLine($"EdgeTTS error: {ex.Message}");
             await JsRuntime.InvokeVoidAsync("alert", "TTS Error.");
         }

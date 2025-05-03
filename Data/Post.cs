@@ -18,4 +18,6 @@ internal sealed class Post
     public string? ImageFile { get; set; }
 
     public string? OcrImageText { get; set; }
+
+    public RawAudioData? AudioData { get; set; }
 }

@@ -12,6 +12,8 @@ internal sealed class ProjectDBContext : DbContext
 
     public ProjectDBContext() { }
 
+    public DbSet<RawAudioData> RawAudioData { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
@@ -22,6 +24,9 @@ internal sealed class ProjectDBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<RawAudioData>()
+            .HasKey(rawAudioData => new { rawAudioData.PostId, rawAudioData.AudioId });     // Tells EF Core that the combination of PostId and AudioId is the primary key for the RawAudioData entity. Required to allow multiple audio entries for single post.
+
         Post[] postsToSeed = new Post[6];
 
         for (int i = 1; i <= 6; i++)

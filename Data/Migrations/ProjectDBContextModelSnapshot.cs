@@ -81,6 +81,26 @@ namespace BlazorProjectApp1.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("BlazorProjectApp1.Data.RawAudioData", b =>
+                {
+                    b.Property<int>("PostId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AudioId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("AudioBinaryData")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("PostId", "AudioId");
+
+                    b.HasIndex("PostId")
+                        .IsUnique();
+
+                    b.ToTable("RawAudioData");
+                });
+
             modelBuilder.Entity("BlazorProjectApp1.Entities.UserAccount", b =>
                 {
                     b.Property<int>("Id")
@@ -107,6 +127,22 @@ namespace BlazorProjectApp1.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserAccount");
+                });
+
+            modelBuilder.Entity("BlazorProjectApp1.Data.RawAudioData", b =>
+                {
+                    b.HasOne("BlazorProjectApp1.Data.Post", "RelevantPost")
+                        .WithOne("AudioData")
+                        .HasForeignKey("BlazorProjectApp1.Data.RawAudioData", "PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RelevantPost");
+                });
+
+            modelBuilder.Entity("BlazorProjectApp1.Data.Post", b =>
+                {
+                    b.Navigation("AudioData");
                 });
 #pragma warning restore 612, 618
         }
