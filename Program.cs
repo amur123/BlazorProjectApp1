@@ -42,25 +42,29 @@ app.UseAuthorization();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// Retrieves most recent audio data via AudioId  with associated post. Allowing for streaming of audio directly from the database.
+// Retrieves most recent audio data via AudioId  with associated post.
+// Allowing for streaming of audio directly from the database.
 app.MapGet(
     "/audio/{postId:int}",
     async (int postId, ProjectDBContext dbContext, HttpContext httpAudioContext) =>
     {
-    // Queries the database for most recent RawAudioData for the relevant PostId and if multiple exist the highest AudioId is treated as most recent.
-    var audioData = await dbContext.RawAudioData
-    .Where(rawAudioData => rawAudioData.PostId == postId)
-    .OrderByDescending(rawAudioData => rawAudioData.AudioId)
-    .FirstOrDefaultAsync();
+        // Queries the database for most recent RawAudioData for the relevant PostId and if multiple exist the highest AudioId is treated as most recent.
+        var audioData = await dbContext.RawAudioData
+            .Where(rawAudioData => rawAudioData.PostId == postId)
+            .OrderByDescending(rawAudioData => rawAudioData.AudioId)
+            .FirstOrDefaultAsync();
 
-    // If no audio data is found for PostId then responds with 404.
-    if (audioData is null)
-    {
-        return Results.NotFound();
-    }
-    httpAudioContext.Response.ContentType = "audio/mpeg"; // Sets the response context to audio/mpeg letting browser know it's an mp3 stream. Modern browsers recognise mpeg as mp3.
-    await httpAudioContext.Response.Body.WriteAsync(audioData.AudioBinaryData); // Writes AudioBinaryData directry to stream from database without saving to local disk.
-    return Results.Ok(); // Gives an OK response upon stream completion.
-});
+        // If no audio data is found for PostId then responds with 404.
+        if (audioData is null)
+        {
+            return Results.NotFound();
+        }
+        // Sets the response context to audio/mpeg letting browser know it's an mp3 stream. Modern browsers recognise mpeg as mp3.
+        httpAudioContext.Response.ContentType = "audio/mpeg";
+        // Writes AudioBinaryData directry to stream from database without saving to local disk.
+        await httpAudioContext.Response.Body.WriteAsync(audioData.AudioBinaryData);
+        // Gives an OK response upon stream completion.
+        return Results.Ok();
+    });
 
 app.Run();
