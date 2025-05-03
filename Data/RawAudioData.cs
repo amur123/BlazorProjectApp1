@@ -3,7 +3,7 @@
 namespace BlazorProjectApp1.Data;
 
 internal class RawAudioData
-    {
+{
     [Key]
     public int PostId { get; set; } // ID which is linked to a post.
 

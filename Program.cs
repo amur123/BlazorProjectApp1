@@ -46,8 +46,8 @@ app.MapRazorComponents<App>()
 app.MapGet(
     "/audio/{postId:int}",
     async (int postId, ProjectDBContext dbContext, HttpContext httpAudioContext) =>
-{   
-    // Queries the database for most recent RawAudioData for the relevant PostId and if multiple exist the highest AudioId is treated as most recent.
+{
+// Queries the database for most recent RawAudioData for the relevant PostId and if multiple exist the highest AudioId is treated as most recent.
     var audioData = await dbContext.RawAudioData
     .Where(rawAudioData => rawAudioData.PostId == postId)
     .OrderByDescending(rawAudioData => rawAudioData.AudioId)
