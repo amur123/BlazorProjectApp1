@@ -25,20 +25,20 @@
             <h5>Extracted OCR Text</h5>
             <pre>@_post.OcrImageText</pre>
 
-            <button class="btn btn-success mt-2" @onclick="() => ReadOcrTextAsync(_post.OcrImageText)">
+            <button class="btn btn-accessibility btn-blue w-100 my-2" @onclick="() => ReadOcrTextAsync(_post.OcrImageText)">
                 Play
             </button>
-            <button class="btn btn-warning mt-2" @onclick="PauseAudioAsync">
+            <button class="btn btn-accessibility btn-yellow w-100 my-2" @onclick="PauseAudioAsync">
                 Pause
-            </button> 
-            <button class="btn btn-danger mt-2" @onclick="StopAudioAsync">
+            </button>
+            <button class="btn btn-accessibility btn-pink w-100 my-2" @onclick="StopAudioAsync">
                 Stop
             </button>
         }
     </div>
 </div>
 
-<button @onclick="@(() => NavigationManager.NavigateTo("/"))" class="btn btn-secondary">
+<button @onclick="@(() => NavigationManager.NavigateTo("/"))" class="btn btn-accessibility btn-black w-100 my-2">
     Back to Home
 </button>
 

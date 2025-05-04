@@ -12,7 +12,7 @@
 
 <div class="row">
     <div class="col-12">
-        <h2 class="fw-bolder">Welcome to <span class="text-danger">Blazor Project</span></h2>
+        <h2 class="fw-bolder">Welcome to <span class="highlight-text">Blazor Project</span></h2>
     </div>
     <div class="col-12">
         <div class="card">
@@ -27,7 +27,7 @@
                             <a class="fw-bolder" href="/logoff">CLICK HERE</a> to logoff.
                         </span>
 
-                        <a href="/create" class="btn btn-success btn-lg bg-opacity-100 my-4">+ Create</a>
+                        <a href="/create" class="btn btn-accessibility btn-green my-4">+ Create</a>
 
                         <table class="table table-responsive table-striped">
                             <thead>
@@ -48,13 +48,13 @@
                                             <td>@post.Title</td>
                                             <td>@post.Content</td>
                                             <td>
-                                                <a href="/view/@post.PostId" class="btn btn-info btn-lg w-100 my-2">
+                                                <a href="/view/@post.PostId" class="btn btn-accessibility btn-blue w-100 my-2">
                                                     View
                                                 </a>
-                                                <a href="/update/@post.PostId" class="btn btn-warning btn-lg w-100 my-2">
+                                                <a href="/update/@post.PostId" class="btn btn-accessibility btn-yellow w-100 my-2">
                                                     Update
                                                 </a>
-                                                <button @onclick="() => DeleteConfirmationAsync(post)" class="btn btn-danger btn-lg w-100 my-2">
+                                                <button @onclick="() => DeleteConfirmationAsync(post)" class="btn btn-accessibility btn-pink w-100 my-2">
                                                     Delete
                                                 </button>
                                             </td>
