@@ -8,10 +8,10 @@ updates:
     commit-message:
       prefix: "chore:DEPBOT:"
 
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "chore:DEPBOT:"
+  # Removing as npm not currently required and to stop alerts as no package.json #- package-ecosystem: "npm"
+    #directory: "/"
+    #schedule:
+      #interval: "daily"
+    #open-pull-requests-limit: 5
+    #commit-message:
+      #prefix: "chore:DEPBOT:"
