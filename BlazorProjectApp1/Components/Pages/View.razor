@@ -1,0 +1,118 @@
+﻿@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Authorization
+@using EdgeTTS
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "User,Administrator")]
+
+@page "/view/{PostId:int}"
+
+<h1>@_post.Title</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        @if (!string.IsNullOrEmpty(_post.ImageFile))
+        {
+            <img src="@_post.ImageFile" class="img-fluid mb-3" style="max-height: 400px;" />
+        }
+
+        <p class="fs-5">@_post.Content</p>
+
+        @if (!string.IsNullOrWhiteSpace(_post.OcrImageText))
+        {
+            <hr />
+            <h5>Extracted OCR Text</h5>
+            <pre>@_post.OcrImageText</pre>
+
+            <button class="btn btn-accessibility btn-blue w-100 my-2" @onclick="() => ReadOcrTextAsync(_post.OcrImageText)">
+                Play
+            </button>
+            <button class="btn btn-accessibility btn-yellow w-100 my-2" @onclick="PauseAudioAsync">
+                Pause
+            </button>
+            <button class="btn btn-accessibility btn-pink w-100 my-2" @onclick="StopAudioAsync">
+                Stop
+            </button>
+        }
+    </div>
+</div>
+
+<button @onclick="@(() => NavigationManager.NavigateTo("/"))" class="btn btn-accessibility btn-black w-100 my-2">
+    Back to Home
+</button>
+
+@code {
+    [Parameter] public int PostId { get; set; }
+    private Post _post = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        using var context = new ProjectDBContext();
+        var found = await context.Posts.FindAsync(PostId);
+
+        if (found is not null)
+        {
+            _post = found;
+        }
+        else
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Post not found.");
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    private async Task ReadOcrTextAsync(string text)
+    {
+        try
+        {
+            using var context = new ProjectDBContext();     // Creates new database context for each request.
+            var existing = await context.RawAudioData       // Checks to see if audio data already exists for the post.
+                .FirstOrDefaultAsync(audioRecord => audioRecord.PostId == PostId);
+
+            if (existing is null)       // Audio is only generated no entry exists in the database.
+            {
+                using var memoryStream = new MemoryStream();    // Creates a memory stream to hold the audio data.
+                var communicate = new Communicate(text, "en-IE-EmilyNeural");      // Initialises the EdgeTTS communicate object with text and selectec voice. Voice can be changed here have applied Irish English female voice.
+                await communicate.Stream(AudioStreamHandler);       // Streams the audio data to the memory stream.
+                
+                var newAudioData = new RawAudioData     // Creates a new audio data object to store the audio data in the database.
+                {
+                    PostId = PostId,
+                    AudioId = context.RawAudioData.Count(audioRecord => audioRecord.PostId == PostId) + 1,         // Allows multiple audio files per post with sequential ID per post.
+                        AudioBinaryData = memoryStream.ToArray()    // Saves the binary audio data to the database.
+                };
+
+                context.RawAudioData.Add(newAudioData);     // Adds the new audio data to the database context for persistency.
+                await context.SaveChangesAsync();
+
+                void AudioStreamHandler(AudioResult ttsStreamData)      // The audio stream handler handles the audio data as it is streamed from the EdgeTTS service.
+                {
+                    if (ttsStreamData.Type == "audio" && ttsStreamData.Data is not null)  // Confrims that the data is audio data and not null before memort stream is written to.
+                    {
+                        ttsStreamData.Data.CopyTo(memoryStream);
+                    }
+                }
+            }
+            // Calls the JavaScript function to play the audio.
+            var url = $"{NavigationManager.BaseUri}audio/{PostId}";
+            await JsRuntime.InvokeVoidAsync("audioPlayer.play", url);
+        }
+        catch (Exception ex)
+        {
+            // Displays errors with more detail if they occur.
+            var detailedTTSError = $"TTS Error: {ex.GetType().Name} {ex.Message}\n{ex.StackTrace}";
+            Console.WriteLine(detailedTTSError);
+
+            await JsRuntime.InvokeVoidAsync("alert", $"TTS ERROR: {ex.Message}");
+        }
+    }
+    private async Task PauseAudioAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("audioPlayer.pause");
+    }
+    private async Task StopAudioAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("audioPlayer.stop");
+    }
+}
