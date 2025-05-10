@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Authorization
 @inject IJSRuntime JsRuntime
 @rendermode InteractiveServer
+@inject ProjectDBContext DbContext
 @attribute [Authorize(Roles = "User,Administrator")]
 
 @page "/"
@@ -75,17 +76,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = new ProjectDBContext();
-
-        _posts = await context.Posts.ToListAsync();
+        _posts = await DbContext.Posts.ToListAsync(); // Loads all posts from the database into the component list and is utilises with test injected database for testing.
     }
 
     private async Task DeletePostAsync(Post postToDelete)
     {
-        using var context = new ProjectDBContext();
-        context.Posts.Remove(postToDelete);
+        DbContext.Posts.Remove(postToDelete);
 
-        if (await context.SaveChangesAsync() > 0)
+        if (await DbContext.SaveChangesAsync() > 0)
         {
             _posts.Remove(postToDelete);
         }

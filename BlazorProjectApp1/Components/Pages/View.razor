@@ -4,6 +4,7 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+@inject ProjectDBContext DbContext
 @attribute [Authorize(Roles = "User,Administrator")]
 
 @page "/view/{PostId:int}"
@@ -48,8 +49,9 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        using var context = new ProjectDBContext();
-        var found = await context.Posts.FindAsync(PostId);
+        //Replaced new context creation with injected DbContext
+        // This ensures both the app and test share the same DB instance (e.g. in-memory)
+        var found = await DbContext.Posts.FindAsync(PostId);
 
         if (found is not null)
         {
@@ -66,8 +68,8 @@
     {
         try
         {
-            using var context = new ProjectDBContext();     // Creates new database context for each request.
-            var existing = await context.RawAudioData       // Checks to see if audio data already exists for the post.
+            // Uses the injected DbContext shared with the test
+            var existing = await DbContext.RawAudioData
                 .FirstOrDefaultAsync(audioRecord => audioRecord.PostId == PostId);
 
             if (existing is null)       // Audio is only generated no entry exists in the database.
@@ -79,12 +81,12 @@
                 var newAudioData = new RawAudioData     // Creates a new audio data object to store the audio data in the database.
                 {
                     PostId = PostId,
-                    AudioId = context.RawAudioData.Count(audioRecord => audioRecord.PostId == PostId) + 1,         // Allows multiple audio files per post with sequential ID per post.
-                        AudioBinaryData = memoryStream.ToArray()    // Saves the binary audio data to the database.
+                    AudioId = DbContext.RawAudioData.Count(audioRecord => audioRecord.PostId == PostId) + 1,         // Allows multiple audio files per post with sequential ID per post.
+                    AudioBinaryData = memoryStream.ToArray()    // Saves the binary audio data to the database.
                 };
 
-                context.RawAudioData.Add(newAudioData);     // Adds the new audio data to the database context for persistency.
-                await context.SaveChangesAsync();
+                DbContext.RawAudioData.Add(newAudioData);     // Adds the new audio data to the database context for persistency then adds and saves it outside object initialiser.
+                await DbContext.SaveChangesAsync();
 
                 void AudioStreamHandler(AudioResult ttsStreamData)      // The audio stream handler handles the audio data as it is streamed from the EdgeTTS service.
                 {

@@ -4,6 +4,7 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+@inject ProjectDBContext DbContext
 @attribute [Authorize(Roles = "User,Administrator")]
 
 @page "/update/{PostId:int}"
@@ -49,12 +50,11 @@
 @code {
     [Parameter] public int PostId { get; set; }
 
-    private Post _postToUpdate = null;
+    private Post _postToUpdate = new(); // Prevents null reference on initial render.
 
     protected override async Task OnParametersSetAsync()
     {
-        using var context = new ProjectDBContext();
-        _postToUpdate = await context.Posts.FindAsync(PostId);
+        _postToUpdate = await DbContext.Posts.FindAsync(PostId); // Shared and utilised with Injected DB for testing.
     }
 
     private async Task ImageUploadHandler(InputFileChangeEventArgs e)
@@ -74,10 +74,9 @@
 
     private async Task UpdatePostAsync()
     {
-        using var context = new ProjectDBContext();
-        context.Posts.Update(_postToUpdate);
+        DbContext.Posts.Update(_postToUpdate);  // Utilised with Injected DB for testing.
 
-        if (await context.SaveChangesAsync() > 0)
+        if (await DbContext.SaveChangesAsync() > 0)
         {
             NavigationManager.NavigateTo("/");
         }

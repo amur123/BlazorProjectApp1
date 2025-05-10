@@ -4,6 +4,7 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+@inject ProjectDBContext DbContext
 @attribute [Authorize(Roles = "User,Administrator")]
 
 @page "/create"
@@ -72,20 +73,25 @@
         _postToCreate.OcrImageText = ExtractTextFromImage(memory.ToArray());
     }
 
+    // Modified method to use injected DbContext allowing for shared DB instance so changes made during test are observable and testable.
     private async Task CreatePostAsync()
     {
-        using var context = new ProjectDBContext();
-        await context.Posts.AddAsync(_postToCreate);
-
-
-        if (await context.SaveChangesAsync() > 0)
+        try
         {
-            NavigationManager.NavigateTo("/");
+            await DbContext.Posts.AddAsync(_postToCreate);
+
+            if (await DbContext.SaveChangesAsync() > 0)  // Checks and waits for the database to save at least 1 change and during tests it confirms that the in memory database is functioning.
+            {
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Failed to create post.");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            string errorMessage = $"Failed to create  post";
-            await JsRuntime.InvokeVoidAsync("alert", errorMessage);
+            await JsRuntime.InvokeVoidAsync("alert", $"Error: {ex.Message}");
         }
     }
 
