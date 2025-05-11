@@ -1,13 +1,9 @@
-﻿using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Bunit;
 using Bunit.TestDoubles;
 using BlazorProjectApp1.Data;
 using BlazorProjectApp1.Components.Pages;
-using Microsoft.AspNetCore.Http.HttpResults;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BlazorProjectApp1.Tests
 {
@@ -53,6 +49,8 @@ namespace BlazorProjectApp1.Tests
             JSInterop.Setup<bool>("confirm", _ => true).SetResult(true);
             JSInterop.SetupVoid("alert", _ => true);
 
+            // Registers the PostManager service to be used in the component for the test.
+            Services.AddScoped<PostManager>();
             // Act renders Home and clicks the delete button.
             var component = RenderComponent<Home>();
             // Finds all delete buttons and deletes the last one 999999999.

@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Bunit;
 using BlazorProjectApp1.Data;
 using BlazorProjectApp1.Components.Pages;
+using Bunit.TestDoubles;
+using Microsoft.AspNetCore.Components.Authorization;
 
 
 namespace BlazorProjectApp1.Tests
@@ -14,33 +16,41 @@ namespace BlazorProjectApp1.Tests
     /// </summary>
     public class CreateTest : TestContext
     {
-        /// <summary>
-        /// Test to check if a post is added to the database when the form is submitted.
-        /// </summary>
         [Fact]
         public void CreatePost_ShouldAddPostToDatabase()
         {
-            // Sets up isolated database in memory with EF Core thus using this test DB for the test instead of real DB thus not making any changes during test.
-            var options = new DbContextOptionsBuilder<ProjectDBContext>().UseInMemoryDatabase(databaseName: "TestDb_CreatePost").Options; // Sets up a temporary in memory database for testing.
+            // Sets up the test databases
+            var options = new DbContextOptionsBuilder<ProjectDBContext>().UseInMemoryDatabase("TestDb_CreatePost").Options;
 
-            var context = new ProjectDBContext(options);
-            context.Database.EnsureCreated();
+            var dbContext = new ProjectDBContext(options);
+            dbContext.Database.EnsureCreated();
 
-            // Injestcs in-memory database into the test context making the test DB context available to the component during the test.
-            Services.AddSingleton<ProjectDBContext>(context);
+            // Registers the database context before anything else
+            Services.AddSingleton(dbContext);
 
-            // Arrange
-            var createComponent = RenderComponent<Create>(); // Creates new instance of object to test simulating Create.razor in test browser.
+            // Arrange sets up fake authentication so PostManager assigns a username
+            var authContext = this.AddTestAuthorization();
+            authContext.SetAuthorized("TestUser");
+            authContext.SetRoles("User");
 
-            // Act
+            // Registers PostManager with the fake authentication provider for the test and makes sure to get the test DbContext making Create.razor component available via [Inject] PostManager.
+            Services.AddScoped<PostManager>(authServicesProvider => // Uses IServiceProvider to get the AuthenticationStateProvider to resolve authentication.
+            {
+                var authProvider = authServicesProvider.GetRequiredService<AuthenticationStateProvider>();
+                return new PostManager(dbContext, authProvider);
+            });
+
+            // Act renders Create.razor and simulates user input and submit.
+            var createComponent = RenderComponent<Create>();
             createComponent.Find("#postTitle").Change("Test Title");            // Sets Title field.
             createComponent.Find("#postContent").Change("Test Content");        // Sets Content field.
             createComponent.Find("Form").Submit();                              // Calls CreatePostAsync().
 
-            // Assert
-            var result = context.Posts.FirstOrDefault(post => post.Title == "Test Title");  // Retrieves newly added post.
-            Assert.NotNull(result);                                                   // Asserts the post exists.
-            Assert.Equal("Test Content", result.Content);                             // Asserts the content matches.
+            // Assert verifies post was added to database
+            var result = dbContext.Posts.FirstOrDefault(p => p.Title == "Test Title");
+            Assert.NotNull(result);
+            Assert.Equal("Test Content", result.Content);
+            Assert.Equal("TestUser", result.Username); // Confirms username is stored.
         }
     }
 }

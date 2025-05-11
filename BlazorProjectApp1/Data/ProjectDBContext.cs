@@ -35,10 +35,9 @@ internal sealed class ProjectDBContext : DbContext
             {
                 PostId = i,
                 Title = $"Post {i}",
-                Content = $"Content for post {i}"
+                Content = $"Content for post {i}",
             };
         }
-
         modelBuilder.Entity<Post>().HasData(data: postsToSeed);
     }
 }

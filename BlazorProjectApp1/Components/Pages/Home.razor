@@ -3,6 +3,7 @@
 @inject IJSRuntime JsRuntime
 @rendermode InteractiveServer
 @inject ProjectDBContext DbContext
+@inject PostManager PostManager
 @attribute [Authorize(Roles = "User,Administrator")]
 
 @page "/"
@@ -72,11 +73,11 @@
 </div>
 
 @code {
-    private List<Post> _posts = null;
+    private List<Post>? _posts;
 
     protected override async Task OnInitializedAsync()
     {
-        _posts = await DbContext.Posts.ToListAsync(); // Loads all posts from the database into the component list and is utilises with test injected database for testing.
+        _posts = await PostManager.GetPostsForCurrentUserAsync();
     }
 
     private async Task DeletePostAsync(Post postToDelete)
@@ -85,14 +86,14 @@
 
         if (await DbContext.SaveChangesAsync() > 0)
         {
-            _posts.Remove(postToDelete);
+            _posts?.Remove(postToDelete);
         }
         else
         {
-            string errorMessage = $"Failed to delete post \"{postToDelete.Title}\"";
-            await JsRuntime.InvokeVoidAsync("alert", errorMessage);
+            await JsRuntime.InvokeVoidAsync("alert", $"Failed to delete post \"{postToDelete.Title}\"");
         }
     }
+
     private async Task DeleteConfirmationAsync(Post postToDelete)
     {
         bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete \"{postToDelete.Title}\"?");

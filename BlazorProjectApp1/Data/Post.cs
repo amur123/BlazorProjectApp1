@@ -20,4 +20,6 @@ internal sealed class Post
     public string? OcrImageText { get; set; }
 
     public RawAudioData? AudioData { get; set; }
+
+    public string Username { get; set; } = string.Empty; // Property for the username of the post author linking each post to the creating user.
 }

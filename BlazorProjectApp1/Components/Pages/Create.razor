@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 @inject ProjectDBContext DbContext
+@inject PostManager PostManager
 @attribute [Authorize(Roles = "User,Administrator")]
 
 @page "/create"
@@ -78,9 +79,9 @@
     {
         try
         {
-            await DbContext.Posts.AddAsync(_postToCreate);
+            var success = await PostManager.CreatePostAsync(_postToCreate);
 
-            if (await DbContext.SaveChangesAsync() > 0)  // Checks and waits for the database to save at least 1 change and during tests it confirms that the in memory database is functioning.
+            if (success)
             {
                 NavigationManager.NavigateTo("/");
             }

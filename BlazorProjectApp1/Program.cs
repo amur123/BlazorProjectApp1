@@ -1,6 +1,5 @@
 using BlazorProjectApp1.Components;
 using BlazorProjectApp1.Data;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +20,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddDbContext<ProjectDBContext>();
+builder.Services.AddScoped<PostManager>();
 
 var app = builder.Build();
 
