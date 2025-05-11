@@ -30,20 +30,20 @@ namespace BlazorProjectApp1.Tests
             var options = new DbContextOptionsBuilder<ProjectDBContext>()
                 .UseInMemoryDatabase($"TestDb_DeletePost_{Guid.NewGuid()}")
                 .Options;
-            var context = new ProjectDBContext(options);
-            context.Database.EnsureCreated();
+            var dbContext = new ProjectDBContext(options);
+            dbContext.Database.EnsureCreated();
 
             const int testPostId = 999999999; // High number to avoid any conflicts during testing seeded during test which will be deleted.
-            context.Posts.Add(new Post
+            dbContext.Posts.Add(new Post
             {
                 PostId = testPostId,
                 Title = "Post to be delete",
                 Content = "Content to be deleted"
             });
-            context.SaveChanges();  // Persists the changes to the in-memory database.
+            dbContext.SaveChanges();  // Persists the changes to the in-memory database.
 
             // Register the test DbContext so the component uses this in-memory database.
-            Services.AddSingleton(context);
+            Services.AddSingleton(dbContext);
 
             // Setups up JSInterop so that confirm returns true and alert is not operational thus not returning exception and immediately runs test.
             JSInterop.Setup<bool>("confirm", _ => true).SetResult(true);
@@ -64,7 +64,7 @@ namespace BlazorProjectApp1.Tests
             }, timeout: TimeSpan.FromSeconds(2));
 
             // Asserts verifies with EF Core that the post has been removed.
-            var deleted = context.Posts.AsNoTracking().FirstOrDefault(dbpost => dbpost.PostId == testPostId);
+            var deleted = dbContext.Posts.AsNoTracking().FirstOrDefault(dbpost => dbpost.PostId == testPostId);
             Assert.Null(deleted);
         }
     }

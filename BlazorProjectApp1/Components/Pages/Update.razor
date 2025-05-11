@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 @inject ProjectDBContext DbContext
+@inject PostManager PostManager
 @attribute [Authorize(Roles = "User,Administrator")]
 
 @page "/update/{PostId:int}"
@@ -52,9 +53,16 @@
 
     private Post _postToUpdate = new(); // Prevents null reference on initial render.
 
+    // Posts accessed via the PostManager to ensure authorisation.
     protected override async Task OnParametersSetAsync()
     {
-        _postToUpdate = await DbContext.Posts.FindAsync(PostId); // Shared and utilised with Injected DB for testing.
+        _postToUpdate = await PostManager.GetPostIfAuthorisedAsync(PostId);
+
+        if (_postToUpdate is null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Access denied or post not found.");
+            NavigationManager.NavigateTo("/");
+        }
     }
 
     private async Task ImageUploadHandler(InputFileChangeEventArgs e)

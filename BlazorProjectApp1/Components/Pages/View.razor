@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 @inject ProjectDBContext DbContext
+@inject PostManager PostManager
 @attribute [Authorize(Roles = "User,Administrator")]
 
 @page "/view/{PostId:int}"
@@ -49,17 +50,12 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        //Replaced new context creation with injected DbContext
-        // This ensures both the app and test share the same DB instance (e.g. in-memory)
-        var found = await DbContext.Posts.FindAsync(PostId);
+        // Posts accessed via the PostManager to ensure authorisation.
+        _post = await PostManager.GetPostIfAuthorisedAsync(PostId);
 
-        if (found is not null)
+        if (_post is null)
         {
-            _post = found;
-        }
-        else
-        {
-            await JsRuntime.InvokeVoidAsync("alert", "Post not found.");
+            await JsRuntime.InvokeVoidAsync("alert", "Access denied or post not found.");
             NavigationManager.NavigateTo("/");
         }
     }
