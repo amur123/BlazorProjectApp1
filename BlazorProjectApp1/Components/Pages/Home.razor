@@ -31,6 +31,8 @@
 
                         <a href="/create" class="btn btn-accessibility btn-green my-4">+ Create</a>
 
+                        <input class="form-control mb-3" style="width: 400px; font-weight: bold;" value="@searchTerm" @oninput="OnSearchChanged" placeholder="SEARCH..." />
+
                         <table class="table table-responsive table-striped">
                             <thead>
                                 <tr>
@@ -75,11 +77,14 @@
 </div>
 
 @code {
-    private List<Post>? _posts;
+    private List<Post>? _allPosts; // Store all posts for filtering.
+    private List<Post>? _posts; // List of posts to display.
+    private string searchTerm = ""; // Stores the search term entered by the user in search bar.
 
     protected override async Task OnInitializedAsync()
     {
-        _posts = await PostManager.GetPostsForCurrentUserAsync();
+        _allPosts = await PostManager.GetPostsForCurrentUserAsync();
+        _posts = _allPosts;
     }
 
     private async Task DeletePostAsync(Post postToDelete)
@@ -103,6 +108,26 @@
         if (confirmed)
         {
             await DeletePostAsync(postToDelete);
+        }
+    }
+
+    // When the user types in search bar it triggers this method.
+    private void OnSearchChanged(ChangeEventArgs inputChangeEvent)
+    {
+        searchTerm = inputChangeEvent.Value?.ToString() ?? ""; // Get the value from the input field.
+        ApplySearch(); // Apply the search filter logic.
+    }
+
+    // This method is called to filter the posts based on the search term.
+    private void ApplySearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm)) // If the search term is empty or whitespace shows all posts.
+        {
+            _posts = _allPosts;
+        }
+        else
+        {
+            _posts = _allPosts?.Where(post => post.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || post.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || post.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList(); // Filter posts based on the search term of title or contents or username.
         }
     }
 }
