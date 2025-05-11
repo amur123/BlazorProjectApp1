@@ -37,6 +37,7 @@
                                     <th scope="col">Id (PK)</th>
                                     <th scope="col">Title</th>
                                     <th scope="col">Content</th>
+                                    <th scope="col">User</th>
                                     <th scope="col">CRUD</th>
                                 </tr>
                             </thead>
@@ -49,6 +50,7 @@
                                             <th scope="row">@post.PostId</th>
                                             <td>@post.Title</td>
                                             <td>@post.Content</td>
+                                            <td>@post.Username</td>
                                             <td>
                                                 <a href="/view/@post.PostId" class="btn btn-accessibility btn-blue w-100 my-2">
                                                     View
