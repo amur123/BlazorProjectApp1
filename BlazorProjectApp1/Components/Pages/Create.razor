@@ -43,11 +43,11 @@
         </div>
     }
 
-    <button class="btn btn-success" type="submit">
+    <button class="btn btn-accessibility btn-blue w-100 my-2" type="submit">
         Create
     </button>
 
-    <button @onclick="@(() => NavigationManager.NavigateTo("/"))" class="btn btn-secondary">
+    <button type="button" @onclick="CancelCreate" class="btn btn-accessibility btn-pink w-100 my-2">
         Cancel
     </button>
 </EditForm>
@@ -58,6 +58,12 @@
             Title = "Post Title",
             Content = "Post Content"
         };
+
+    private void CancelCreate()
+    {
+        _postToCreate = new Post(); // Clears changes before navigating away from the form helps with OCR upload comiiting changes before create selected.
+        NavigationManager.NavigateTo("/");
+    }
 
     private async Task ImageUploadHandler(InputFileChangeEventArgs e)
     {
