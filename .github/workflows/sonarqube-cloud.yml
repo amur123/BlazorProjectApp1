@@ -37,7 +37,7 @@ jobs:
             /o:"amur123" \
             /d:sonar.token="${{ secrets.githubsonartoken }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="**/TestResults/*/coverage.opencover.xml"
+            /d:sonar.cs.opencover.reportsPaths="**/BlazorProjectApp1.Tests/TestResults/*/coverage.opencover.xml"
 
 # Restores the NuGet packages required by solution before building.
       - name: Restore Dependencies
@@ -56,6 +56,16 @@ jobs:
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=TestResults/coverage.opencover.xml
+
+      - name: Debug Show Layout
+        run: |
+          echo "--- Layout ---"
+          find . -maxdepth 3 -type f -printf '  %P\n'
+
+      - name: Debug Find coverage.opencover.xml
+        run: |
+          echo "--- Find coverage files ---"
+          find . -type f -name "coverage.opencover.xml"
 
 # Finishes the scan and uploads results to SonarQube.
       - name: End SonarQube-Cloud Analysis
