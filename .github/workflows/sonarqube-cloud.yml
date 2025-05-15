@@ -63,7 +63,6 @@ jobs:
             -reports:"**/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
             -reporttypes:Cobertura \
-            -reportfile:"Cobertura.xml"
 
 # Finishes the scan and uploads results to SonarQube.
       - name: End SonarQube-Cloud Analysis
