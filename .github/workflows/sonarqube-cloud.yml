@@ -41,7 +41,7 @@ jobs:
             /o:"amur123" \
             /d:sonar.token="${{ secrets.githubsonartoken }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.vscoveragexml.reportsPaths="coveragereport/Cobertura.xml"
+            /d:sonar.cs.opencover.reportsPaths="coveragereport/Cobertura.xml"
 
 # Restores the NuGet packages required by solution before building.
       - name: Restore Dependencies
