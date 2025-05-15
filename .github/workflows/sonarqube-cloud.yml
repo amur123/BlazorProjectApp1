@@ -31,12 +31,12 @@ jobs:
 
       - name: Begin SonarQube-Cloud Analysis
         run: |
-         export PATH="$PATH:/home/runner/.dotnet/tools"
-         dotnet-sonarscanner begin
-           /k:"amur123_BlazorProjectApp1"
-           /o:"amur123"
-           /d:sonar.token="${{ secrets.github-sonar-token }}"
-           /d:sonar.host.url="https://sonarcloud.io"
+          export PATH="$PATH:/home/runner/.dotnet/tools"
+          dotnet-sonarscanner begin \
+            /k:"amur123_BlazorProjectApp1" \
+            /o:"amur123" \
+            /d:sonar.token="${{ secrets.github-sonar-token }}" \
+            /d:sonar.host.url="https://sonarcloud.io"
 
 # Restores the NuGet packages required by solution before building.
       - name: Restore Dependencies
