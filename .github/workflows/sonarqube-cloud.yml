@@ -37,6 +37,7 @@ jobs:
             /o:"amur123" \
             /d:sonar.token="${{ secrets.githubsonartoken }}" \
             /d:sonar.host.url="https://sonarcloud.io"
+            /d:sonar.cs.vscoveragexml.reportsPaths="**/coverage.cobertura.xml"
 
 # Restores the NuGet packages required by solution before building.
       - name: Restore Dependencies
@@ -45,6 +46,19 @@ jobs:
 # Builds the solution to get ready for tests and analyses.
       - name: Build
         run: dotnet build --no-incremental
+
+# Runs tests and collects coverage info.
+      - name: Run Coverlet Test Tool and Collect Coverage
+      # Tells the test runner use coverlet tool to collect code coverage during test run.
+        run: dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj --no-build --collect:"XPlat Code Coverage"
+
+# Converts the coverage test data to to Corbuertura formatted report so Sonar can display on dashboard.
+      - name: Generate Corbertura XML Report from Coverage Data
+        run: |
+          reportgenerator \
+            -reports:"**/coverage.cobertura.xml" \
+            -targetdir:"coveragereport" \
+            -reporttypes:Cobertura
 
 # Executes the xUnit with bUnit tests.
       - name: Run Tests
