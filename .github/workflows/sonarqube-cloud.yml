@@ -50,7 +50,7 @@ jobs:
 # Runs tests and collects coverage info.
       - name: Run Coverlet Test Tool and Collect Coverage
       # Tells the test runner use coverlet tool to collect code coverage during test run.
-        run: dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj --no-build --collect:"XPlat Code Coverage" \
+        run: dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj \
          --no-build \
          --collect:"Xplat Code Coverage"
 
