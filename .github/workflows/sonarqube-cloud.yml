@@ -4,7 +4,7 @@ name: SonarQube-Cloud
 
 on:
   push:
-# Triggers on push to main branch.
+    # Triggers on push to main branch.
     branches:
       - main
 
@@ -17,7 +17,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-# Sonar requires the full GitHub history for tracking and analyses.
+          # Sonar requires the full GitHub history for tracking and analyses.
           fetch-depth: 0
 
       - name: Setup .NET
@@ -25,7 +25,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-# CLI tool installed for project analyses.
+      # CLI tool installed for project analyses.
       - name: Install SonarScanner for .NET
         run: dotnet tool install --global dotnet-sonarscanner
 
@@ -37,26 +37,36 @@ jobs:
             /o:"amur123" \
             /d:sonar.token="${{ secrets.githubsonartoken }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="**/BlazorProjectApp1.Tests/TestResults/*/coverage.opencover.xml"
+            /d:sonar.cs.opencover.reportsPaths="CoverageReports/coverage.opencover.xml"
 
-# Restores the NuGet packages required by solution before building.
-      - name: Restore Dependencies
-        run: dotnet restore
+      # Restores Builds the solution to get ready for tests and analyses.
+      - name: Restore and Build
+        run: |
+          dotnet restore
+          dotnet build --no-incremental
 
-# Builds the solution to get ready for tests and analyses.
-      - name: Build
-        run: dotnet build --no-incremental
-
-# Runs tests and collects coverage info.
-      - name: Run Tests and Collect OpenCover
-      # Tells the test runner use coverlet tool to collect code coverage during test run.
+      # Runs tests and collects coverage info.
+      # Tells the test runner to use Coverlet for OpenCover output.
+      - name: Run Tests and Collect Cobertura
         run: |
           dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj \
             --no-build \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=TestResults/coverage.opencover.xml
+            --collect:"XPlat Code Coverage"
 
+      - name: Convert Cobertura to OpenCover
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+          reportgenerator \
+            -reports:**/TestResults/*/coverage.cobertura.xml \
+            -targetdir:CoverageReports \
+            -reporttypes:opencover
+          echo "Converted report at CoverageReports/coverage.opencover.xml"
+
+      - name: Debug Find Converted Report
+        run: |
+          echo "--- Locating CoverageReports/coverage.opencover.xml ---"
+          find CoverageReports -type f
+            
       - name: Debug Show Layout
         run: |
           echo "--- Layout ---"
@@ -67,6 +77,6 @@ jobs:
           echo "--- Find coverage files ---"
           find . -type f -name "coverage.opencover.xml"
 
-# Finishes the scan and uploads results to SonarQube.
+      # Finishes the scan and uploads results to SonarQube.
       - name: End SonarQube-Cloud Analysis
         run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.githubsonartoken }}"
