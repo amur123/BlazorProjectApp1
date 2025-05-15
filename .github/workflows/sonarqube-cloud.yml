@@ -29,6 +29,10 @@ jobs:
       - name: Install SonarScanner for .NET
         run: dotnet tool install --global dotnet-sonarscanner
 
+# Installs package for report generator coverting coverage data to Cobertura CML format for Sonar to read.
+      - name: Install Report Generator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
       - name: Begin SonarQube-Cloud Analysis
         run: |
           export PATH="$PATH:/home/runner/.dotnet/tools"
@@ -37,7 +41,7 @@ jobs:
             /o:"amur123" \
             /d:sonar.token="${{ secrets.githubsonartoken }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.vscoveragexml.reportsPaths="**/coverage.cobertura.xml"
+            /d:sonar.cs.vscoveragexml.reportsPaths="coveragereport/Cobertura.xml"
 
 # Restores the NuGet packages required by solution before building.
       - name: Restore Dependencies
@@ -53,16 +57,12 @@ jobs:
         run: dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj --no-build --collect:"XPlat Code Coverage"
 
 # Converts the coverage test data to to Corbuertura formatted report so Sonar can display on dashboard.
-      - name: Generate Corbertura XML Report from Coverage Data
+      - name: Generate Cobertura XML Report from Coverage Data
         run: |
           reportgenerator \
             -reports:"**/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
             -reporttypes:Cobertura
-
-# Executes the xUnit with bUnit tests.
-      - name: Run Tests
-        run: dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj --no-build
 
 # Finishes the scan and uploads results to SonarQube.
       - name: End SonarQube-Cloud Analysis
