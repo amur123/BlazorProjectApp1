@@ -48,10 +48,14 @@ jobs:
         run: dotnet build --no-incremental
 
 # Runs tests and collects coverage info.
-      - name: Run Coverlet Test Tool and Collect Coverage
+      - name: Run Tests and Collect OpenCover
       # Tells the test runner use coverlet tool to collect code coverage during test run.
         run: |
-          dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj --no-build --collect:"XPlat Code Coverage"
+          dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj \
+            --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=TestResults/coverage.opencover.xml
 
 # Finishes the scan and uploads results to SonarQube.
       - name: End SonarQube-Cloud Analysis
