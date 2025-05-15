@@ -24,5 +24,5 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    # No unit tests currently will remove comment later # - name: Test
-    # No unit tests currently will remove comment later #  run: dotnet test --no-build --verbosity normal
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
