@@ -25,10 +25,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install global tools
+      - name: Install SonarScanner
         run: |
           dotnet tool install --global dotnet-sonarscanner
-          dotnet tool install --global dotnet-reportgenerator-globaltool
 
       - name: Begin SonarQube-Cloud Analysis
         run: |
@@ -54,15 +53,15 @@ jobs:
             /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=TestResults/coverage.opencover.xml
 
-      - name: Debug Find Converted Report
-        run: |
-          echo "--- Locating CoverageReports/coverage.opencover.xml ---"
-          find CoverageReports -type f
+      #- name: Debug Find Converted Report
+        #run: |
+          #echo "--- Locating CoverageReports/coverage.opencover.xml ---"
+          #find CoverageReports -type f
             
       - name: Debug Show Layout
         run: |
           echo "--- Layout ---"
-          find . -maxdepth 3 -type f -printf '  %P\n'
+          find . -maxdepth 4 -type f -printf '  %P\n'
 
       - name: Debug Find coverage.opencover.xml
         run: |
