@@ -45,13 +45,14 @@ jobs:
           dotnet restore
           dotnet build --no-incremental
 
-      - name: Run tests and Collect OpenCover
+      - name: Run Tests and Collect OpenCover
         run: |
           dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj \
             --no-build \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=TestResults/coverage.opencover.xml
+            /p:CoverletOutput=TestResults/coverage.opencover.xml \
+            /p:Include="[BlazorProjectApp1]*"
 
       #- name: Debug Find Converted Report
         #run: |
