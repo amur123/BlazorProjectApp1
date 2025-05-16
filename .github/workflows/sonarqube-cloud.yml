@@ -38,7 +38,7 @@ jobs:
             /o:"amur123" \
             /d:sonar.token="${{ secrets.githubsonartoken }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="CoverageReports/coverage.opencover.xml"
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/*/coverage.opencover.xml"
 
       # Restores and Builds the solution to get ready for tests and analyses.
       - name: Restore and Build
@@ -46,19 +46,13 @@ jobs:
           dotnet restore
           dotnet build --no-incremental
 
-      - name: Run tests and collect Cobertura
+      - name: Run tests and Collect OpenCover
         run: |
           dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj \
             --no-build \
-            --collect:"XPlat Code Coverage"
-
-      - name: Convert to OpenCover
-        run: |
-          reportgenerator \
-            -reports:**/TestResults/*/coverage.cobertura.xml \
-            -targetdir:CoverageReports \
-            -reporttypes:opencover
-          echo "Generated: CoverageReports/coverage.opencover.xml"
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=TestResults/coverage.opencover.xml
 
       - name: Debug Find Converted Report
         run: |
