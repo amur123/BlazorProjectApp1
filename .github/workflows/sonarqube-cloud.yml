@@ -37,8 +37,8 @@ jobs:
             /o:"amur123" \
             /d:sonar.token="${{ secrets.githubsonartoken }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-	    /d:sonar.sources="BlazorProjectApp1" \
-	    /d:sonar.tests="BlazorProjectApp1.Tests" \
+            /d:sonar.sources="BlazorProjectApp1" \
+            /d:sonar.tests="BlazorProjectApp1.Tests" \
             /d:sonar.cs.opencover.reportsPaths="**/BlazorProjectApp1.Tests/TestResults/coverage.opencover.xml"
 
       # Restores and Builds the solution to get ready for tests and analyses.
