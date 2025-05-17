@@ -141,8 +141,8 @@ jobs:
         run: |
           echo "BUILDING: Docker image..."
           echo "ALL PASSED: Tests /and/ Scans ((Placeholder: Deploy staging would run here...))"
-		  
-# Opens or updates the PR into main
+	  
+   # Opens or updates the PR into main
   open-pr-into-main:
     name: Create Pull Request Into Main
     needs: deploy-staging
