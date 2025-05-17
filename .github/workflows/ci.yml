@@ -111,17 +111,17 @@ jobs:
             /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=BlazorProjectApp1.Tests/TestResults/coverage.opencover.xml
 			
-	  #- name: !Debug! Find Converted Report
-        #run: |
+        #- name: Debug Find Converted Report 
+	#run: |
           #echo "--- Locating CoverageReports/coverage.opencover.xml ---"
           #find CoverageReports -type f
             
-      - name: !Debug! Show Layout
+      - name: Debug Show Layout
         run: |
           echo "--- Layout ---"
           find . -maxdepth 4 -type f -printf '  %P\n'
 
-      - name: !Debug! Find coverage.opencover.xml
+      - name: Debug Find coverage.opencover.xml
         run: |
           echo "--- Find coverage files ---"
           find . -type f -name "coverage.opencover.xml"
@@ -142,37 +142,36 @@ jobs:
           echo "ALL PASSED: Tests /and/ Scans ((Placeholder: Deploy staging would run here...))"
 		  
 # Opens or updates the PR into main
-open-pr-into-main:
-  name: Create Pull Request Into Main
-  needs: deploy-staging
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+  open-pr-into-main:
+    name: Create Pull Request Into Main
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Create or Update PR into main
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const base = "main";
-          const head = context.ref.replace("refs/heads/", "");
-          // Find any open PR from head into main
-          const { data: existingPRs } = await github.rest.pulls.list({
-            ...context.repo,
-            state: "open",
-            head: `${context.repo.owner}:${head}`,
-            base,
-          });
-          if (existingPRs.length) {
-            console.log(`PR #${existingPRs[0].number} already open from ${head} to ${base}.`);
-          } else {
-            const { data: newPR } = await github.rest.pulls.create({
+      - name: Create or Update PR into main
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const base = "main";
+            const head = context.ref.replace("refs/heads/", "");
+            const { data: existingPRs } = await github.rest.pulls.list({
               ...context.repo,
-              title: `Merge ${head} into ${base}`,
-              head,
+              state: "open",
+              head: `${context.repo.owner}:${head}`,
               base,
-              body: `Automated PR to merge ${head} into ${base} after successful CI.`,
             });
-            console.log(`Opened PR #${newPR.number} from ${head} into ${base}.`);
-          }
+            if (existingPRs.length) {
+              console.log(`PR #${existingPRs[0].number} already open.`);
+            } else {
+              const { data: newPR } = await github.rest.pulls.create({
+                ...context.repo,
+                title: `Merge ${head} into ${base}`,
+                head,
+                base,
+                body: `Automated PR to merge ${head} into ${base} after successful CI.`,
+              });
+              console.log(`Opened PR #${newPR.number}.`);
+            }
