@@ -35,7 +35,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Run Tests
-        run: dotnet test --no-build --verbosity normal BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj   
+        run: dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj --no-build --verbosity normal
 
 #Super-Linter and StyleCop Analysis
   lint:
@@ -105,12 +105,12 @@ jobs:
 
       - name: Run Test and Collect Coverage
         run: |
-          dotnet test \
+          dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj \
             --no-build \
-            --collect:"XPlat Code Coverage" \
-            --results-directory BlazorProjectApp1.Tests/TestResults \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
-            BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=TestResults/coverage.opencover.xml \
+            /p:Include="[BlazorProjectApp1]*"
 
       # Debug find converted report
       # - name: Debug Find Converted Report
