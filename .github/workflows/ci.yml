@@ -167,7 +167,7 @@ jobs:
       - name: Create or Update PR into main
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.CIPRTOKEN }}
           script: |
             const base = "main";
             const head = context.ref.replace("refs/heads/", "");
