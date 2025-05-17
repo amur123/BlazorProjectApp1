@@ -65,7 +65,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_CSHARP: true
           VALIDATE_JAVASCRIPT: true
-          VALIDATE_CSS: false
+          # don’t INCLUDE “VALIDATE_CSS” or any CSS linter
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+          IGNORED_DIRECTORIES: |
+            Components/Layout
+            wwwroot/bootstrap
+            tessdata
 
 # SonarQube-Cloud Analysis
   sonar:
