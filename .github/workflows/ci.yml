@@ -110,7 +110,7 @@ jobs:
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=BlazorProjectApp1.Tests/TestResults/coverage.opencover.xml
-			
+
       # Debug find converted report
       # - name: Debug Find Converted Report
       #   run: |
