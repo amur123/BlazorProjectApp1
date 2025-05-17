@@ -105,12 +105,13 @@ jobs:
 
       - name: Run Test and Collect Coverage
         run: |
-          dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj \
+          dotnet test \
             --no-build \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=TestResults/coverage.opencover.xml \
-            /p:Include="[BlazorProjectApp1]*"
+            /p:CoverletOutput=BlazorProjectApp1.Tests/TestResults/coverage.opencover.xml \
+            /p:Include="[BlazorProjectApp1]*" \
+            BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj
 
       # Debug find converted report
       # - name: Debug Find Converted Report
