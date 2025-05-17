@@ -37,7 +37,7 @@ jobs:
             --project "BlazorProjectApp1-SecScan" \
             --out reports \
             --scan . \
-            --nvdApiKey="${{ secrets.NVD_API_KEY }}"
+            --nvdApiKey="${{ secrets.NVDAPIKEY }}"
 
       - name: Install Gitleaks
         run: |
