@@ -36,7 +36,7 @@ jobs:
           ./dependency-check/bin/dependency-check.sh \
             --project "BlazorProjectApp1-SecScan" \
             --out reports \
-            --scan . \
+            --scan BlazorProjectApp1 \
             --nvdApiKey="${{ secrets.NVDAPIKEY }}"
 
       - name: Dependency Check Summary
