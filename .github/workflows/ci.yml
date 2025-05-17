@@ -35,11 +35,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Run Tests
-        run: |
-          dotnet test \
-            --no-build \
-            --verbosity normal \
-            BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj   
+        run: dotnet test --no-build --verbosity normal BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj   
 
 #Super-Linter and StyleCop Analysis
   lint:
