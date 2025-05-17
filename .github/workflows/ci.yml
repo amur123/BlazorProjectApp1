@@ -6,8 +6,6 @@ on:
   push:
   #  Runs on every branch.
     branches: [ '**' ]
-  pull_request:
-    branches: [ main ]
 
 permissions:
   contents: read
@@ -157,7 +155,7 @@ jobs:
     needs: deploy-staging
     runs-on: ubuntu-latest
 
-    # On runs on pushes to non-main branch and skips on PR's.
+    # Runs on pushes to non-main branch and skips on PR's.
     if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
     
     steps:
