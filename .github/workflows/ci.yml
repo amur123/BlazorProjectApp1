@@ -4,7 +4,8 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+  #  Runs on every branch.
+    branches: [ '**' ]
   pull_request:
     branches: [ main ]
 
@@ -154,6 +155,10 @@ jobs:
     name: Create Pull Request Into Main
     needs: deploy-staging
     runs-on: ubuntu-latest
+
+    # Only runs if this is not the main branch triggering this job on pushes to non-main branches.
+    if: ${{ github.ref != 'refs/heads/main' }} 
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
