@@ -7,11 +7,6 @@ on:
     workflows: [ "CI Pipeline" ] # Targets the CI Pipeline workflow telling so as to run on completed.
     types: [ completed ]
 
-  # Triggers Anytime a PR is opened, updated, or re-opened.
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [ '**' ]
-
 # Permissions have been kept to a minimum so as to allow dependency checks to complete etc.
 permissions:
   contents: read
