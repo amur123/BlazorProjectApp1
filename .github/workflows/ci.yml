@@ -143,9 +143,10 @@ jobs:
     # Codeql is not included here so staging still runs CodeQL needs to be triggered manually due to CodeQL restrictions on private repos.
     needs: [ build-test, lint, sonar ]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Simulate Deploy to Staging
+        # This step only runs on pushes to main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           echo "BUILDING: Docker image..."
           echo "ALL PASSED: Tests /and/ Scans ((Placeholder: Deploy staging would run here...))"
@@ -156,8 +157,8 @@ jobs:
     needs: deploy-staging
     runs-on: ubuntu-latest
 
-    # Only runs if this is not the main branch triggering this job on pushes to non-main branches.
-    if: ${{ github.ref != 'refs/heads/main' }} 
+    # Runs on pushes to non-main branch and skips on PR's.
+    if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
     
     steps:
       - name: Checkout Code
@@ -166,7 +167,7 @@ jobs:
       - name: Create or Update PR into main
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.CIPRTOKEN }}
           script: |
             const base = "main";
             const head = context.ref.replace("refs/heads/", "");
