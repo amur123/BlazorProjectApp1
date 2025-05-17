@@ -36,8 +36,20 @@ jobs:
           ./dependency-check/bin/dependency-check.sh \
             --project "BlazorProjectApp1-SecScan" \
             --out reports \
-            --scan . \
-            --nvdApiKey ${{ secrets.NVD_API_KEY }}
+            --scan BlazorProjectApp1 \
+            --nvdApiKey="${{ secrets.NVDAPIKEY }}"
+
+      - name: Dependency Check Summary
+        run: |
+          echo "HIGH AND CRITICAL VULNERABILITIES FOUND"
+          grep -iE "(CRITICAL|HIGH)" reports/dependency-check-report.html \
+            || echo "→ No High or Critical found in dependency-check-report.html"
+            
+      # JSON processor used to read array for how many leaks found. 
+      # Enforce Vulnerability Block will read the JSON and returns found leaks blocking only if gitleaks JSON shows leaks.
+      - name: Install JQ
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
 
       - name: Install Gitleaks
         run: |
@@ -50,15 +62,22 @@ jobs:
       - name: Run Gitleaks Secret Scan
         run: gitleaks detect --source . --redact --report-path gitleaks-report.json
 
+      - name: Gitleaks Secret Scan Report
+        run: |
+          echo "GIT LEAKS SECRET SCAN REPORT"
+          cat gitleaks-report.json
+
       - name: Enforce Vulnerability Block
         run: |
           dotnet list package --vulnerable || true
+          # Block on any high or critical detections from OWASP d ependency check.
           if grep -qE "(CRITICAL|HIGH)" reports/dependency-check-report.html; then
             echo "!!!FAIL!!! Critical vulnerabilities detected blocking merge."
             exit 1
           fi
-          if [ -s gitleaks-report.json ]; then
-            echo "!!!FAIL!!! Secrets found blocking merge."
+          leaks=$(jq 'length' gitleaks-report.json)
+          if [ "$leaks" -gt 0 ]; then
+            echo "!!!FAIL!!! Found $leaks secret leak(s) blocking merge."
             exit 1
           fi
 

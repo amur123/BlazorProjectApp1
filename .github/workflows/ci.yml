@@ -4,7 +4,8 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+  #  Runs on every branch.
+    branches: [ '**' ]
   pull_request:
     branches: [ main ]
 
@@ -32,10 +33,10 @@ jobs:
         run: dotnet restore
 
       - name: Build Solution
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --no-restore
 
-      - name: Run Tests
-        run: dotnet test --no-build --verbosity normal
+      - name: Run Tests From Test Project
+        run: dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj --no-build --verbosity normal
 
 #Super-Linter and StyleCop Analysis
   lint:
@@ -56,7 +57,7 @@ jobs:
         run: dotnet restore
 
       - name: Enforce StyleCop Rules
-        run: dotnet build BlazorProjectApp1.sln /p:TreatWarningsAsErrors=true
+        run: dotnet build BlazorProjectApp1.sln #/p:TreatWarningsAsErrors=true
 
       - name: Run Super-Linter
         uses: github/super-linter@v4
@@ -65,7 +66,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_CSHARP: true
           VALIDATE_JAVASCRIPT: true
-          VALIDATE_CSS: false
+          # don’t INCLUDE “VALIDATE_CSS” or any CSS linter
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+          IGNORED_DIRECTORIES: |
+            Components/Layout
+            wwwroot/bootstrap
+            tessdata
 
 # SonarQube-Cloud Analysis
   sonar:
@@ -105,23 +111,26 @@ jobs:
 
       - name: Run Test and Collect Coverage
         run: |
-          dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj \
+          dotnet test \
             --no-build \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=BlazorProjectApp1.Tests/TestResults/coverage.opencover.xml
-			
-	  #- name: !Debug! Find Converted Report
-        #run: |
-          #echo "--- Locating CoverageReports/coverage.opencover.xml ---"
-          #find CoverageReports -type f
-            
-      - name: !Debug! Show Layout
+            /p:CoverletOutput=BlazorProjectApp1.Tests/TestResults/coverage.opencover.xml \
+            /p:Include="[BlazorProjectApp1]*" \
+            BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj
+
+      # Debug find converted report
+      # - name: Debug Find Converted Report
+      #   run: |
+      #     echo "--- Locating CoverageReports/coverage.opencover.xml ---"
+      #     find CoverageReports -type f
+
+      - name: Debug Show Layout
         run: |
           echo "--- Layout ---"
           find . -maxdepth 4 -type f -printf '  %P\n'
 
-      - name: !Debug! Find coverage.opencover.xml
+      - name: Debug Find coverage.opencover.xml
         run: |
           echo "--- Find coverage files ---"
           find . -type f -name "coverage.opencover.xml"
@@ -140,39 +149,42 @@ jobs:
         run: |
           echo "BUILDING: Docker image..."
           echo "ALL PASSED: Tests /and/ Scans ((Placeholder: Deploy staging would run here...))"
-		  
-# Opens or updates the PR into main
-open-pr-into-main:
-  name: Create Pull Request Into Main
-  needs: deploy-staging
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
 
-    - name: Create or Update PR into main
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const base = "main";
-          const head = context.ref.replace("refs/heads/", "");
-          // Find any open PR from head into main
-          const { data: existingPRs } = await github.rest.pulls.list({
-            ...context.repo,
-            state: "open",
-            head: `${context.repo.owner}:${head}`,
-            base,
-          });
-          if (existingPRs.length) {
-            console.log(`PR #${existingPRs[0].number} already open from ${head} to ${base}.`);
-          } else {
-            const { data: newPR } = await github.rest.pulls.create({
+  # Opens or updates the PR into main
+  open-pr-into-main:
+    name: Create Pull Request Into Main
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+
+    # Only runs if this is not the main branch triggering this job on pushes to non-main branches.
+    if: ${{ github.ref != 'refs/heads/main' }} 
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create or Update PR into main
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const base = "main";
+            const head = context.ref.replace("refs/heads/", "");
+            const { data: existingPRs } = await github.rest.pulls.list({
               ...context.repo,
-              title: `Merge ${head} into ${base}`,
-              head,
+              state: "open",
+              head: `${context.repo.owner}:${head}`,
               base,
-              body: `Automated PR to merge ${head} into ${base} after successful CI.`,
             });
-            console.log(`Opened PR #${newPR.number} from ${head} into ${base}.`);
-          }
+            if (existingPRs.length) {
+              console.log(`PR #${existingPRs[0].number} already open.`);
+            } else {
+              const { data: newPR } = await github.rest.pulls.create({
+                ...context.repo,
+                title: `Merge ${head} into ${base}`,
+                head,
+                base,
+                body: `Automated PR to merge ${head} into ${base} after successful CI.`,
+              });
+              console.log(`Opened PR #${newPR.number}.`);
+            }

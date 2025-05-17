@@ -26,8 +26,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
-              body: `Reviewing Code
-- Build & Tests: !!!PASS!!!
-- Style & Lint: !!!PASS!!!
-- Security checks pending deeper scans.`
+              body: "Reviewing Code\n- Build and Tests: !!!PASS!!!\n- Style and Lint: !!!PASS!!!\n- Security checks pending deeper scans."
             });
