@@ -157,8 +157,11 @@ jobs:
     needs: deploy-staging
     runs-on: ubuntu-latest
 
-    # Only runs if this is not the main branch triggering this job on pushes to non-main branches.
-    if: ${{ github.ref != 'refs/heads/main' }} 
+    # Only triggers on pushes or events and not PR's and when it is not main and when push was actions bot.
+    if: >
+      github.event_name == 'push' &&
+      github.ref != 'refs/heads/main' &&
+      github.actor == 'github-actions[bot]'
     
     steps:
       - name: Checkout Code
