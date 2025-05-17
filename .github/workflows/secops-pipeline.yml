@@ -3,9 +3,6 @@
 name: SecOps Pipeline
 
 on:
-  workflow_run:
-    workflows: [ "CI Pipeline" ] # Targets the CI Pipeline workflow telling so as to run on completed.
-    types: [ completed ]
   pull_request:
     branches: [ main ] # Runs on pull requests so that status will be visible in PR.
 
