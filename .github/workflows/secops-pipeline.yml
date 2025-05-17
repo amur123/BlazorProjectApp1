@@ -56,6 +56,11 @@ jobs:
       - name: Run Gitleaks Secret Scan
         run: gitleaks detect --source . --redact --report-path gitleaks-report.json
 
+      - name: Gitleaks Secret Scan Report
+        run: |
+          echo "GIT LEAKS SECRET SCAN REPORT"
+          cat gitleaks-report.json
+
       - name: Enforce Vulnerability Block
         run: |
           dotnet list package --vulnerable || true
