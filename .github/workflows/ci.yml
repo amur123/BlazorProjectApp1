@@ -1,0 +1,178 @@
+# Moves CodeQL, SonarQube-Cloud, Superlinter here.
+# This builds, tests, and runs CodeQL and SonarQube together and simulates a staging deployment.
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+# Builds and Tests.
+jobs:
+  build-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build Solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run Tests
+        run: dotnet test --no-build --verbosity normal
+
+#Super-Linter and StyleCop Analysis
+  lint:
+    name: Super-Linter and StyleCop Analysis
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # StyleCop.Analyzers installed via NuGet in csproj.
+      - name: Restore NuGet Dpendencenies
+        run: dotnet restore
+
+      - name: Enforce StyleCop Rules
+        run: dotnet build BlazorProjectApp1.sln /p:TreatWarningsAsErrors=true
+
+      - name: Run Super-Linter
+        uses: github/super-linter@v4
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_CSHARP: true
+          VALIDATE_JAVASCRIPT: true
+          VALIDATE_CSS: false
+
+# SonarQube-Cloud Analysis
+  sonar:
+    name: SonarQube-Cloud Scan
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Begin SonarCloud Scan
+        run: |
+          export PATH="$PATH:/home/runner/.dotnet/tools"
+          dotnet-sonarscanner begin \
+            /k:"amur123_BlazorProjectApp1" \
+            /o:"amur123" \
+            /d:sonar.token="${{ secrets.githubsonartoken }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.tests="BlazorProjectApp1.Tests" \
+            /d:sonar.sources="BlazorProjectApp1" \
+            /d:sonar.cs.opencover.reportsPaths="BlazorProjectApp1.Tests/TestResults/coverage.opencover.xml"
+
+      - name: Restore and Build
+        run: |
+          dotnet restore
+          dotnet build --no-incremental
+
+      - name: Run Test and Collect Coverage
+        run: |
+          dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj \
+            --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=BlazorProjectApp1.Tests/TestResults/coverage.opencover.xml
+			
+	  #- name: !Debug! Find Converted Report
+        #run: |
+          #echo "--- Locating CoverageReports/coverage.opencover.xml ---"
+          #find CoverageReports -type f
+            
+      - name: !Debug! Show Layout
+        run: |
+          echo "--- Layout ---"
+          find . -maxdepth 4 -type f -printf '  %P\n'
+
+      - name: !Debug! Find coverage.opencover.xml
+        run: |
+          echo "--- Find coverage files ---"
+          find . -type f -name "coverage.opencover.xml"
+
+      - run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.githubsonartoken }}"
+
+# Simulated Deploy to Staging
+  deploy-staging:
+    name: Simulated Deploy Staging
+    # Codeql is not included here so staging still runs CodeQL needs to be triggered manually due to CodeQL restrictions on private repos.
+    needs: [ build-test, lint, sonar ]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Simulate Deploy to Staging
+        run: |
+          echo "BUILDING: Docker image..."
+          echo "ALL PASSED: Tests /and/ Scans ((Placeholder: Deploy staging would run here...))"
+		  
+# Opens or updates the PR into main
+open-pr-into-main:
+  name: Create Pull Request Into Main
+  needs: deploy-staging
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Create or Update PR into main
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const base = "main";
+          const head = context.ref.replace("refs/heads/", "");
+          // Find any open PR from head into main
+          const { data: existingPRs } = await github.rest.pulls.list({
+            ...context.repo,
+            state: "open",
+            head: `${context.repo.owner}:${head}`,
+            base,
+          });
+          if (existingPRs.length) {
+            console.log(`PR #${existingPRs[0].number} already open from ${head} to ${base}.`);
+          } else {
+            const { data: newPR } = await github.rest.pulls.create({
+              ...context.repo,
+              title: `Merge ${head} into ${base}`,
+              head,
+              base,
+              body: `Automated PR to merge ${head} into ${base} after successful CI.`,
+            });
+            console.log(`Opened PR #${newPR.number} from ${head} into ${base}.`);
+          }

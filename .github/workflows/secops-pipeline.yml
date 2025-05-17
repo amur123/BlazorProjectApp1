@@ -1,0 +1,66 @@
+name: SecOps Pipeline
+
+on:
+  workflow_run:
+    workflows: [ "CI Pipeline" ]
+    types: [ completed ]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  security_scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Install Dependency Check
+        run: |
+          wget https://github.com/jeremylong/DependencyCheck/releases/download/v12.1.0/dependency-check-12.1.0-release.zip
+          unzip dependency-check-12.1.0-release.zip
+          chmod +x dependency-check/bin/dependency-check.sh
+
+      - name: Run Dependency Check
+        run: |
+          ./dependency-check/bin/dependency-check.sh \
+            --project "BlazorProjectApp1-SecScan" \
+            --out reports \
+            --scan . \
+            --nvdApiKey ${{ secrets.NVD_API_KEY }}
+
+      - name: Install Gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.26.0/gitleaks_8.26.0_linux_x64.tar.gz \
+            -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz
+          chmod +x gitleaks
+          mv gitleaks /usr/local/bin/
+
+      - name: Run Gitleaks Secret Scan
+        run: gitleaks detect --source . --redact --report-path gitleaks-report.json
+
+      - name: Enforce Vulnerability Block
+        run: |
+          dotnet list package --vulnerable || true
+          if grep -qE "(CRITICAL|HIGH)" reports/dependency-check-report.html; then
+            echo "!!!FAIL!!! Critical vulnerabilities detected blocking merge."
+            exit 1
+          fi
+          if [ -s gitleaks-report.json ]; then
+            echo "!!!FAIL!!! Secrets found blocking merge."
+            exit 1
+          fi
+
+      - name: Confirm SecOps Passed
+        run: echo "!!!PASS!! SecOps checks completed without issue."
