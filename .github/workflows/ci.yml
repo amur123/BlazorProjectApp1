@@ -111,11 +111,12 @@ jobs:
             /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=BlazorProjectApp1.Tests/TestResults/coverage.opencover.xml
 			
-        #- name: Debug Find Converted Report 
-	#run: |
-          #echo "--- Locating CoverageReports/coverage.opencover.xml ---"
-          #find CoverageReports -type f
-            
+      # Debug find converted report
+      # - name: Debug Find Converted Report
+      #   run: |
+      #     echo "--- Locating CoverageReports/coverage.opencover.xml ---"
+      #     find CoverageReports -type f
+
       - name: Debug Show Layout
         run: |
           echo "--- Layout ---"
