@@ -32,9 +32,9 @@ jobs:
         run: dotnet restore
 
       - name: Build Solution
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --no-restore
 
-      - name: Run Tests
+      - name: Run Tests From Test Project
         run: dotnet test BlazorProjectApp1.Tests/BlazorProjectApp1.Tests.csproj --no-build --verbosity normal
 
 #Super-Linter and StyleCop Analysis
