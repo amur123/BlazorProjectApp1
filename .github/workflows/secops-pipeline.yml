@@ -1,10 +1,13 @@
+# SecOps Pipeline runs after the CI Pipeline workflow completes.
+# Performs dependency vulnerability and secret leak scans before allowing merges.
 name: SecOps Pipeline
 
 on:
   workflow_run:
-    workflows: [ "CI Pipeline" ]
+    workflows: [ "CI Pipeline" ] # Targets the CI Pipeline workflow telling so as to run on completed.
     types: [ completed ]
 
+# Permissions have been kept to a minimum so as to allow dependency checks to complete etc.
 permissions:
   contents: read
   security-events: write
@@ -13,24 +16,29 @@ jobs:
   security_scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    # Checks out repo so that code can get scanned.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+        # Installs .NET DSK in order to restore, list and build .Net project.
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
+      # Restores all NuGet packages.    
       - name: Restore Dependencies
         run: dotnet restore
 
+      # Downloads and extracts the OWASP dependency check tool.
       - name: Install Dependency Check
         run: |
           wget https://github.com/jeremylong/DependencyCheck/releases/download/v12.1.0/dependency-check-12.1.0-release.zip
           unzip dependency-check-12.1.0-release.zip
           chmod +x dependency-check/bin/dependency-check.sh
 
+      # Run ths OWASP dependency check tool using NVD database for the project folder and exports reports/dependency-check-report.html.
       - name: Run Dependency Check
         run: |
           ./dependency-check/bin/dependency-check.sh \
@@ -51,6 +59,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y jq
 
+      # Downloads and installs Gitleaks to detect secrets in code.    
       - name: Install Gitleaks
         run: |
           curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.26.0/gitleaks_8.26.0_linux_x64.tar.gz \
@@ -59,14 +68,17 @@ jobs:
           chmod +x gitleaks
           mv gitleaks /usr/local/bin/
 
-      - name: Run Gitleaks Secret Scan
+      # Runs Gitleaks redacting secrets and saving to JSON report. 
+      - name: Run Gitleaks Secrets Scan
         run: gitleaks detect --source . --redact --report-path gitleaks-report.json
 
-      - name: Gitleaks Secret Scan Report
+      # Echos the JSO file to view leaks detected.  
+      - name: Gitleaks Secrets Scan Report
         run: |
           echo "GIT LEAKS SECRET SCAN REPORT"
           cat gitleaks-report.json
 
+      # Enforces blok if it is High/Critical then it is a fail and if the array is greater than 0 meaning leaks found.    
       - name: Enforce Vulnerability Block
         run: |
           dotnet list package --vulnerable || true
