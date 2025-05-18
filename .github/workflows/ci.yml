@@ -194,7 +194,7 @@ jobs:
   # Opens or updates the PR into main
   open-pr-into-main:
     name: Create Pull Request Into Main
-    needs: deploy-development
+    needs: [ build-test, lint, sonar ]
     runs-on: ubuntu-latest
 
     # Runs on pushes to non-main branch and skips on PR's.
