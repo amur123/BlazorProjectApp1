@@ -159,7 +159,7 @@ jobs:
   deploy-staging:
     name: Simulated Deploy Staging
     # Codeql is not included here so staging still runs CodeQL needs to be triggered manually due to CodeQL restrictions on private repos.
-    needs: [ build-test, lint, sonar ]
+    needs: [ deploy-development ]
     runs-on: ubuntu-latest
     environment:
       name: STAGING
@@ -177,7 +177,7 @@ jobs:
   deploy-production:
     name: Simulated Deploy Production
     # Codeql is not included here so staging still runs CodeQL needs to be triggered manually due to CodeQL restrictions on private repos.
-    needs: [ build-test, lint, sonar ]
+    needs: [ deploy-staging ]
     runs-on: ubuntu-latest
     environment:
       name: PRODUCTION
@@ -194,7 +194,7 @@ jobs:
   # Opens or updates the PR into main
   open-pr-into-main:
     name: Create Pull Request Into Main
-    needs: deploy-staging
+    needs: deploy-development
     runs-on: ubuntu-latest
 
     # Runs on pushes to non-main branch and skips on PR's.
