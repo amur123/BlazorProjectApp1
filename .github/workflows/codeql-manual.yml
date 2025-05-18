@@ -39,7 +39,7 @@ jobs:
         uses: github/codeql-action/analyze@v3
         
       # Installs JQ to read JSON file.  
-      -name: Install JQ
+      - name: Install JQ
         run: sudo apt-get update && sudo apt-get install -y jq
 
       # Dumps the full results into the console.
