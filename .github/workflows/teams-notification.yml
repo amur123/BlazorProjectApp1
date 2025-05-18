@@ -2,7 +2,7 @@
 # This occurs on push and pull requests.
 # See following for more info: https://github.com/marketplace/actions/microsoft-teams-notifications
 name: Teams Notification
-on: [push, pull_request]
+on: [pull_request] # Notification trigger only on pull requests.
 
 jobs:
   build:

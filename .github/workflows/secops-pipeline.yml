@@ -37,7 +37,7 @@ jobs:
           unzip dependency-check-12.1.0-release.zip
           chmod +x dependency-check/bin/dependency-check.sh
 
-      # Run ths OWASP dependency check tool using NVD database for the project folder and exports reports/dependency-check-report.html.
+      # Runs ths OWASP dependency check tool using NVD database for the project folder and exports to reports/dependency-check-report.html.
       - name: Run Dependency Check
         run: |
           ./dependency-check/bin/dependency-check.sh \
@@ -46,11 +46,12 @@ jobs:
             --scan BlazorProjectApp1 \
             --nvdApiKey="${{ secrets.NVDAPIKEY }}"
 
+      # Gives a simmary of high and critical found.
       - name: Dependency Check Summary
         run: |
           echo "HIGH AND CRITICAL VULNERABILITIES FOUND"
           grep -iE "(CRITICAL|HIGH)" reports/dependency-check-report.html \
-            || echo "→ No High or Critical found in dependency-check-report.html"
+            || echo "No High or Critical found in dependency-check-report.html"
             
       # JSON processor used to read array for how many leaks found. 
       # Enforce Vulnerability Block will read the JSON and returns found leaks blocking only if gitleaks JSON shows leaks.

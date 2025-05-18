@@ -1,17 +1,20 @@
+# This workflow triggers when a pull request into main occurs.
 name: Review Code
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ] # Only triggers for main branch on PR's.
 
+# Minimum permissions required to read and write comments to pull requests.
 permissions:
   contents: read
   pull-requests: write
   issues: write
 
+# Posts a comment in PR with status messages authenticates with github token.
 jobs:
   review:
-    name: Add Comment to PR
+    name: Adds Comment to PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -26,5 +29,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
-              body: "Reviewing Code\n- Build and Tests: !!!PASS!!!\n- Style and Lint: !!!PASS!!!\n- Security checks pending deeper scans."
+              body: "REVIEWING CODE:\n- Security checks In-Progress (pass required to merge)\n- SonarQube Cloud Scan In-Progress (pass required to merge)\n- Quality Gate Results In-Progress (results will appear below shortly)"
             });
