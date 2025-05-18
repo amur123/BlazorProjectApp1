@@ -1,6 +1,6 @@
 # Moves CodeQL, SonarQube-Cloud, Superlinter here.
 # This builds, tests, and runs CodeQL and SonarQube together and simulates a staging deployment.
-name: CI Pipeline
+name: CICD Pipeline
 
 on:
   push:
@@ -225,7 +225,7 @@ jobs:
                 title: `Merge ${head} into ${base}`,
                 head,
                 base,
-                body: `Automated PR to merge ${head} into ${base} after successful CI.`,
+                body: `Automated PR to merge ${head} into ${base} after successful CICD.`,
               });
               console.log(`Opened PR #${newPR.number}.`);
             }
