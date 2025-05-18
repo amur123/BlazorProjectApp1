@@ -1,0 +1,18 @@
+# This workflow creates a Teams notification in group chat via webhook URL.
+# This occurs on push and pull requests.
+# See following for more info: https://github.com/marketplace/actions/microsoft-teams-notifications
+name: Teams Notification
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      # this is the new step
+      - uses: dchourasia/ms-teams-notification@1.0 #  or "./" if in a local set-up
+        if: always()
+        with:
+          github-token: ${{ github.token }}
+          webhook-uri: ${{ secrets.GITHUBTEAMSWEBHOOKURL }}
