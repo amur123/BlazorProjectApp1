@@ -136,13 +136,35 @@ jobs:
           find . -type f -name "coverage.opencover.xml"
 
       - run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.githubsonartoken }}"
+      
+ # Simulated Deploy to Development
+  deploy-development:
+    name: Simulated Deploy Development
+    # Codeql is not included here so staging still runs CodeQL needs to be triggered manually due to CodeQL restrictions on private repos.
+    needs: [ build-test, lint, sonar ]
+    runs-on: ubuntu-latest
+    environment:
+      name: DEVELOPMENT
+      # To be replace with the actual environment server URL .
+      # url: https://placeholder.example.com
+    steps:
+      - name: Simulate Deploy to Development
+        # This step only runs on pushes to main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "BUILDING: Docker image..."
+          echo "ALL PASSED: Tests /and/ Scans ((Placeholder: Deploy development would run here...))"
 
 # Simulated Deploy to Staging
   deploy-staging:
     name: Simulated Deploy Staging
     # Codeql is not included here so staging still runs CodeQL needs to be triggered manually due to CodeQL restrictions on private repos.
-    needs: [ build-test, lint, sonar ]
+    needs: [ deploy-development ]
     runs-on: ubuntu-latest
+    environment:
+      name: STAGING
+      # To be replace with the actual environment server URL .
+      # url: https://placeholder.example.com
     steps:
       - name: Simulate Deploy to Staging
         # This step only runs on pushes to main
@@ -150,11 +172,29 @@ jobs:
         run: |
           echo "BUILDING: Docker image..."
           echo "ALL PASSED: Tests /and/ Scans ((Placeholder: Deploy staging would run here...))"
+          
+# Simulated Deploy to Production
+  deploy-production:
+    name: Simulated Deploy Production
+    # Codeql is not included here so staging still runs CodeQL needs to be triggered manually due to CodeQL restrictions on private repos.
+    needs: [ deploy-staging ]
+    runs-on: ubuntu-latest
+    environment:
+      name: PRODUCTION
+      # To be replace with the actual environment server URL .
+      # url: https://placeholder.example.com
+    steps:
+      - name: Simulate Deploy to Production
+        # This step only runs on pushes to main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "BUILDING: Docker image..."
+          echo "ALL PASSED: Tests /and/ Scans ((Placeholder: Deploy production would run here...))"
 
   # Opens or updates the PR into main
   open-pr-into-main:
     name: Create Pull Request Into Main
-    needs: deploy-staging
+    needs: [ build-test, lint, sonar ]
     runs-on: ubuntu-latest
 
     # Runs on pushes to non-main branch and skips on PR's.
