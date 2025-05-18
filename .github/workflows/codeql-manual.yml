@@ -15,7 +15,7 @@ jobs:
     permissions:
       actions: read
       contents: read
-      security-events: writ
+      security-events: write
 
     # Runs analysis of C# and JS in parallel.
     strategy:
