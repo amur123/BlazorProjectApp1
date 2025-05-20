@@ -3,6 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlazorProjectApp1.Data;
 
+/// <summary>
+/// ProjectDBContext is the database context for the Blazor application.
+/// Uses Entity Framework Core to manage the database.
+/// Uses SQLite as the database provider.
+/// Defines the tables for the application.
+/// </summary>
 internal sealed class ProjectDBContext : DbContext
 {
     public DbSet<Post> Posts { get; set; }
@@ -14,14 +20,16 @@ internal sealed class ProjectDBContext : DbContext
 
     public DbSet<RawAudioData> RawAudioData { get; set; }
 
+    // Configures the database connection string using SQLite.
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlite("Data Source=BlazorProjectApp.db");
+            optionsBuilder.UseSqlite("Data Source=BlazorProjectApp.db"); // If the context is not configured it uses SQLite as the database provider.
         }
     }
 
+    // Database model including the tables and their relationships.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<RawAudioData>()
@@ -29,7 +37,7 @@ internal sealed class ProjectDBContext : DbContext
 
         Post[] postsToSeed = new Post[6];
 
-        for (int i = 1; i <= 6; i++)
+        for (int i = 1; i <= 6; i++) // For testing purposes 6 posts are seeded.
         {
             postsToSeed[i - 1] = new Post
             {

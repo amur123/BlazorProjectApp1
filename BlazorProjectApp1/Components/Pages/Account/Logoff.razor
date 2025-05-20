@@ -18,18 +18,22 @@
     </div>
 </div>
 
-    @code {
-        [CascadingParameter
+@code {
+    /// <summary>
+    /// Uses the HttpContext to sign out the user giving server side access to the authentication cookie.
+    /// Used to sign out the user and redirect to the logoff page.
+    /// </summary>
+    [CascadingParameter
         ]
         public HttpContext HttpContext { get; set; }
 
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() // Runs automatically when the component is initialised.
         {
             await base.OnInitializedAsync();
-            if (HttpContext.User.Identity.IsAuthenticated)
+            if (HttpContext.User.Identity.IsAuthenticated) // Checks if the user is logged in.
             {
                 await HttpContext.SignOutAsync();
-                navigationManager.NavigateTo("/logoff", true);
+            navigationManager.NavigateTo("/logoff", true); // Redirects to user to the logoff page.
             }
         }
 }

@@ -2,6 +2,12 @@
 
 namespace BlazorProjectApp1.Data;
 
+/// <summary>
+/// Defines the stricture of a post in the applications database.
+/// Includes the properties for the post ID, title, content, image file, OCR text, audio data and username.
+/// Associates image file and audio data with the post.
+/// Username property is used to link the post to the user creating it.
+/// </summary>
 internal sealed class Post
 {
     [Key]

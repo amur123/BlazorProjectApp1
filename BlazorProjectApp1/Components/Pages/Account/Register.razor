@@ -37,29 +37,35 @@
 
 @if (!string.IsNullOrWhiteSpace(_message))
 {
-    <div class="alert alert-info mt-3">@_message</div>
+    <div class="alert alert-info mt-3">@_message</div> // Creates a dynamic message area where is _message contains text it will be displayed and if it is empty or whitespace nothing will be displayed.
 }
 
 @code {
+    /// <summary>
+    /// 
+    /// </summary>
     private RegisterViewModel _registerModel = new()
         {
             Role = "User"
         };
 
-    private string _message;
+    private string _message; // Stores the message to be displayed to the user.
 
+    // Checks if the username already exists in the database and if not creates a new user account saving to database.
     private async Task RegisterAccountAsync()
     {
         var caseUsername = _registerModel.Username.Trim().ToUpperInvariant(); // Takes the username and converts it to uppercase removing any whitespace.
 
-        var exists = _projectDBContext.UserAccounts.Any(u => u.Username.ToUpper() == caseUsername);
+        var exists = _projectDBContext.UserAccounts.Any(u => u.Username.ToUpper() == caseUsername); // Checks if the username already exists in the database by comparing it to the existing usernames in the database.
 
+        // If the username already exists sets the message and returns stopping registration process.
         if (exists)
         {
             _message = $"Username \"{_registerModel.Username}\" already exists.";
             return;
         }
 
+        // If the username does not exist creates a new user account with the provided username, password, and role.
         var user = new UserAccount
             {
                 Username = _registerModel.Username,
@@ -67,15 +73,15 @@
                 Role = _registerModel.Role
             };
 
-        _projectDBContext.UserAccounts.Add(user);
+        _projectDBContext.UserAccounts.Add(user); // Adds the new user account to the database context.
 
-        if (await _projectDBContext.SaveChangesAsync() > 0)
+        if (await _projectDBContext.SaveChangesAsync() > 0) // Attempts to save the changes to the database if successful more than zero changes were made.
         {
             NavigationManager.NavigateTo("/login");
         }
         else
         {
-            _message = $"Failed to register account \"{_registerModel.Username}\".";
+            _message = $"Failed to register account \"{_registerModel.Username}\"."; // If the save fails sets the message to inform the user.
         }
     }
 }
