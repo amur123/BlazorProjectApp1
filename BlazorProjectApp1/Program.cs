@@ -59,12 +59,8 @@ app.MapGet(
         {
             return Results.NotFound();
         }
-        // Sets the response context to audio/mpeg letting browser know it's an mp3 stream. Modern browsers recognise mpeg as mp3.
-        httpAudioContext.Response.ContentType = "audio/mpeg";
-        // Writes AudioBinaryData directry to stream from database without saving to local disk.
-        await httpAudioContext.Response.Body.WriteAsync(audioData.AudioBinaryData);
-        // Gives an OK response upon stream completion.
-        return Results.Ok();
+        // If audio data is found then sets the content type to audio/mpeg and returns the audio binary data.
+        return Results.File(audioData.AudioBinaryData, "audio/mpeg");
     });
 
 app.Run();

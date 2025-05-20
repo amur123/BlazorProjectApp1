@@ -32,8 +32,9 @@ h1:focus {
     outline: 1px solid #e50000;
 }
 
+/* Changed validation messages from red to white for higher contrast */
 .validation-message {
-    color: #e50000;
+    color: white !important;
 }
 
 .blazor-error-boundary {
