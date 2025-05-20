@@ -77,17 +77,23 @@
 </div>
 
 @code {
+    /// <summary>
+    /// All posts are stored in this list.
+    /// Used to filter posts based on the search term.
+    /// Search terms are applied to the title, content, and username.
+    /// Displays the held search term in the search bar.
+    /// </summary>
     private List<Post>? _allPosts; // Store all posts for filtering.
     private List<Post>? _posts; // List of posts to display.
     private string searchTerm = ""; // Stores the search term entered by the user in search bar.
 
     protected override async Task OnInitializedAsync()
     {
-        _allPosts = await PostManager.GetPostsForCurrentUserAsync();
+        _allPosts = await PostManager.GetPostsForCurrentUserAsync(); // Get all posts for the current user and display them.
         _posts = _allPosts;
     }
 
-    private async Task DeletePostAsync(Post postToDelete)
+    private async Task DeletePostAsync(Post postToDelete) // Deletes the specified post from database.
     {
         DbContext.Posts.Remove(postToDelete);
 
@@ -101,7 +107,7 @@
         }
     }
 
-    private async Task DeleteConfirmationAsync(Post postToDelete)
+    private async Task DeleteConfirmationAsync(Post postToDelete) // Asks the user to confirm deletion of the post.
     {
         bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete \"{postToDelete.Title}\"?");
 

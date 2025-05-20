@@ -46,33 +46,41 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Enables server side access to be requested.
+    /// Used to access the HttpContext and users can sign in here
+    /// </summary>
     [CascadingParameter] public HttpContext HttpContext { get; set; }
 
+    // Binds login data to this model holding entered credentials.
     [SupplyParameterFromForm]
     public LoginViewModel Model { get; set; } = new();
 
     private string errorMessage;
 
+    // Triggers when the form is submitted. Tries to authenticate the user with the provided credentials.
     private async Task Authenticate()
     {
         Console.WriteLine($"LOGIN ATTEMPT: {Model.Username} / {Model.Password}");
-        var userAccount = _projectDBContext.UserAccounts.FirstOrDefault(x => x.Username.ToLower() == Model.Username.ToLower() && x.Password == Model.Password);
+        var userAccount = _projectDBContext.UserAccounts.FirstOrDefault(x => x.Username.ToLower() == Model.Username.ToLower() && x.Password == Model.Password); // Retrieves the user account from the database based on the provided username and password.
 
         if (userAccount is null)
         {
-            errorMessage = "Invalid username or password.";
+            errorMessage = "Invalid username or password."; // Sends an error message if the user account is not found.
             return;
         }
 
+        // If the user account is found claims the user account of user and role.
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, userAccount.Username),
             new Claim(ClaimTypes.Role, userAccount.Role)
         };
 
+        // Creates a claims identity and principal for the user using cookie authentication.
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-        await HttpContext.SignInAsync(
+        var principal = new ClaimsPrincipal(identity); // Sets a principal for the user  which is used to identify the user in the application.
+        await HttpContext.SignInAsync( // Signs in the user using the authentication cookie.
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal
         );

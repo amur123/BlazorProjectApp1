@@ -49,6 +49,12 @@
 </EditForm>
 
 @code {
+    /// <summary>
+    /// Receives the PostId from the URL.
+    /// Holds the form data for creating a new post.
+    /// Fetches the post to update from the database.
+    /// If no post is found or access is denied redirects to home page.
+    /// </summary>
     [Parameter] public int PostId { get; set; }
 
     private Post _postToUpdate = new(); // Prevents null reference on initial render.
@@ -72,21 +78,28 @@
         NavigationManager.NavigateTo("/"); // Navigates to home without saving to DB.
     }
 
+    /// <summary>
+    /// Handles the image upload event of file contents
+    /// Converts the image to a base64 string and displays it in the UI.
+    /// </summary>
+    /// <param name="e"> Event argument containing the selected file. </param>
+    /// <returns></returns>
     private async Task ImageUploadHandler(InputFileChangeEventArgs e)
     {
-        var file = e.File;
+        var file = e.File; // Gets the selected file from the event argument.
 
-        using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+        using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // Opens the file stream with a maximum size of 5 MB to limit large uploads.
         using var memory = new MemoryStream();
         await stream.CopyToAsync(memory);
 
-        var base64 = Convert.ToBase64String(memory.ToArray());
+        var base64 = Convert.ToBase64String(memory.ToArray()); // Converts the image data to a base64 string.
         var contentType = file.ContentType;
 
-        _postToUpdate.ImageFile = $"data:{contentType};base64,{base64}";
+        _postToUpdate.ImageFile = $"data:{contentType};base64,{base64}"; // Updates the image file property of the post model with the base64 string.
         _postToUpdate.OcrImageText = ExtractTextFromImage(memory.ToArray());
     }
 
+    // Saves the changes to the database and redirects to the home page or shows an error message if the update fails.
     private async Task UpdatePostAsync()
     {
         DbContext.Posts.Update(_postToUpdate);  // Utilised with Injected DB for testing.
@@ -102,18 +115,19 @@
         }
     }
 
+    // Optical Character Recognition (OCR) method to extract text from the image using Tesseract.
     private string ExtractTextFromImage(byte[] imageBytes)
     {
         try
         {
-            using var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
-            using var img = Pix.LoadFromMemory(imageBytes);
-            using var page = engine.Process(img);
+            using var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default); // Initialises the Tesseract engine with the English language data.
+            using var img = Pix.LoadFromMemory(imageBytes); // Loads the image into the Tesseract engine.
+            using var page = engine.Process(img); // Processes the image using Tesseract OCR.
             return page.GetText();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"OCR Error: {ex.Message}");
+            Console.WriteLine($"OCR Error: {ex.Message}"); // Logs any errors that occur during the OCR process.
             return "OCR failed.";
         }
     }

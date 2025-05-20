@@ -2,6 +2,10 @@
 
 namespace BlazorProjectApp1.Data;
 
+/// <summary>
+/// This is the database model for the raw audio data.
+/// Stores the audio data in binary format.
+/// </summary>
 internal class RawAudioData
 {
     [Key]

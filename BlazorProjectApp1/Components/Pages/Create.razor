@@ -53,6 +53,10 @@
 </EditForm>
 
 @code {
+    /// <summary>
+    /// Holds the form data for creating a new post.
+    /// Initialises with default data to prevent null reference on initial render.
+    /// </summary>
     private Post _postToCreate = new Post
         {
             Title = "Post Title",
@@ -65,55 +69,71 @@
         NavigationManager.NavigateTo("/");
     }
 
+    /// <summary>
+    /// Handles the image upload event.
+    /// Reads the image stream, converts it to a base64 string, and displays it in the UI.
+    /// Extracts text from the image using OCR and stores it in the post model.
+    /// </summary>
+    /// <param name="e"> Argument containing the information about the file. </param>
+    /// <returns></returns>
     private async Task ImageUploadHandler(InputFileChangeEventArgs e)
     {
-        var file = e.File;
+        var file = e.File; // Gets the file from the event argument.
 
-        using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
-        using var memory = new MemoryStream();
+        // Opens the file stream with a maximum size of 5 MB to limit large uploads.
+        using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // Creates a memory stream to hold the image data.
+        using var memory = new MemoryStream(); // Copies the file stream to the memory stream.
         await stream.CopyToAsync(memory);
 
-        var base64 = Convert.ToBase64String(memory.ToArray());
-        var contentType = file.ContentType;
+        var base64 = Convert.ToBase64String(memory.ToArray()); // Converts the image data to a base64 string.
+        var contentType = file.ContentType; // Gets the content type of the file uploaded ie: image/jpeg.
 
-        _postToCreate.ImageFile = $"data:{file.ContentType};base64,{base64}";
-        _postToCreate.OcrImageText = ExtractTextFromImage(memory.ToArray());
+        _postToCreate.ImageFile = $"data:{file.ContentType};base64,{base64}"; // Saves the base64 string to the post model.
+        _postToCreate.OcrImageText = ExtractTextFromImage(memory.ToArray()); // Extracts text from the image using OCR and saves it to the post model.
     }
 
     // Modified method to use injected DbContext allowing for shared DB instance so changes made during test are observable and testable.
+    // Passes the post model to the PostManager to create a new post in the database.
+    // Uses database context to save the post.
     private async Task CreatePostAsync()
     {
         try
         {
-            var success = await PostManager.CreatePostAsync(_postToCreate);
+            var success = await PostManager.CreatePostAsync(_postToCreate); // Calls the PostManager to create a new post in the database.
 
             if (success)
             {
-                NavigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/"); // If the post is created successfully navigates back to the home page.
             }
             else
             {
-                await JsRuntime.InvokeVoidAsync("alert", "Failed to create post.");
+                await JsRuntime.InvokeVoidAsync("alert", "Failed to create post."); // If the post creation fails shows an alert to the user.
             }
         }
         catch (Exception ex)
         {
-            await JsRuntime.InvokeVoidAsync("alert", $"Error: {ex.Message}");
+            await JsRuntime.InvokeVoidAsync("alert", $"Error: {ex.Message}"); // Displays any errors that occur during the post creation process.
         }
     }
 
+    /// <summary>
+    /// Uses tesseract OCR to extract text from the image.
+    /// Requires the Tesseract library to be installed and configured in /tessdata.
+    /// </summary>
+    /// <param name="imageBytes"> The array of the image where to process OCR. </param>
+    /// <returns> Extraxted OCR image text or error message on failure. </returns>
     private string ExtractTextFromImage(byte[] imageBytes)
     {
         try
         {
-            using var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
-            using var img = Pix.LoadFromMemory(imageBytes);
-            using var page = engine.Process(img);
+            using var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default); // Initialises the Tesseract engine with the English language data.
+            using var img = Pix.LoadFromMemory(imageBytes); // Loads the image from memory.
+            using var page = engine.Process(img); // Processes the image using Tesseract OCR.
             return page.GetText();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"OCR Error: {ex.Message}");
+            Console.WriteLine($"OCR Error: {ex.Message}"); // Logs any errors that occur during the OCR process.
             return "OCR failed.";
         }
     }
