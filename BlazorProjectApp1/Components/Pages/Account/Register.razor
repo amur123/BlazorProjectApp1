@@ -50,7 +50,9 @@
 
     private async Task RegisterAccountAsync()
     {
-        var exists = _projectDBContext.UserAccounts.Any(u => u.Username == _registerModel.Username);
+        var caseUsername = _registerModel.Username.Trim().ToUpperInvariant(); // Takes the username and converts it to uppercase removing any whitespace.
+
+        var exists = _projectDBContext.UserAccounts.Any(u => u.Username.ToUpper() == caseUsername);
 
         if (exists)
         {

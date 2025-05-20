@@ -42,7 +42,7 @@
         Update
     </button>
 
-    <button @onclick="@(() => NavigationManager.NavigateTo("/"))" class="btn btn-accessibility btn-pink w-100 my-2">
+    <button type="button" @onclick="CancelUpdate" class="btn btn-accessibility btn-pink w-100 my-2">
         Cancel
     </button>
 
@@ -63,6 +63,13 @@
             await JsRuntime.InvokeVoidAsync("alert", "Access denied or post not found.");
             NavigationManager.NavigateTo("/");
         }
+    }
+
+    private void CancelUpdate()
+    {
+        DbContext.Entry(_postToUpdate).State = EntityState.Detached; // Removes any pending tracked entity so EF forgets any post updates which haven't been applied yet.
+
+        NavigationManager.NavigateTo("/"); // Navigates to home without saving to DB.
     }
 
     private async Task ImageUploadHandler(InputFileChangeEventArgs e)
