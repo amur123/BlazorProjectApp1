@@ -2,6 +2,11 @@
 
 namespace BlazorProjectApp1.Entities.ViewModel
 {
+    /// <summary>
+    /// ViewModel for user login.
+    /// For data binding in the login form.
+    /// Contains properties for username and password with validation attributes.
+    /// </summary>
     public class LoginViewModel
     {
         [Required(AllowEmptyStrings = false, ErrorMessage = "Username is required")]

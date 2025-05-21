@@ -16,7 +16,7 @@ namespace BlazorProjectApp1.Tests
     /// Waiting for the post to be removed from the rendered table.
     /// Confirms that the post is deleted from the database using EF Core.
     /// </summary>
-    public class DeleteTest : TestContext
+    public class DeleteHomeTest : TestContext
     {
         [Fact]
         public void DeletePost_ShouldRemovePostFromDatabase()
