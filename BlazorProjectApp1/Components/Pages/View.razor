@@ -50,6 +50,12 @@
 </button>
 
 @code {
+    /// <summary>
+    /// This component is responsible for displaying the details of a post.
+    /// Uses the PostManager to fetch the post data and ensure the user is authorised to view it.
+    /// Database context is injected to allow access to the database.
+    /// Changes are persisted to the database.
+    /// </summary>
     [Parameter] public int PostId { get; set; }
     private Post _post = new();
 

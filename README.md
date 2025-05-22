@@ -1,5 +1,6 @@
 # BlazorProjectApp1 README
 See below for more information and instructions please.
+* For best performance use Mozilla Firefox browser.
 
 ___
 
@@ -9,7 +10,6 @@ ___
 * Open file `BlazorProjectApp1.sln` in your IDE.
 * Make sure startup item is: BlazorProjectApp1
 * Make sure run option is: https
-* For best performance user Mozilla Firefox browser.
 
    ```bash
    dotnet restore
