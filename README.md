@@ -1,6 +1,7 @@
 # BlazorProjectApp1 README
 See below for more information and instructions please.
 * For best performance use Mozilla Firefox browser.
+* App URL: https://localhost:7222/
 
 ___
 
