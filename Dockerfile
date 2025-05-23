@@ -9,6 +9,7 @@ RUN dotnet publish BlazorProjectApp1/BlazorProjectApp1.csproj -c Release -o /app
 
 # Runtime stage using the ASP.NET runtime image for running the application.
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
+USER appuser # Adding appuser due to SonarQube warning about default user with root access.
 # Sets the directory for the application.
 WORKDIR /app
 # Copies the output from the builstage into the runtime.
