@@ -1,0 +1,6 @@
+# Files/directories for Docker image push to ignore.
+# Trying to address SonarQube security warning.
+
+.vs/
+bin/
+obj/

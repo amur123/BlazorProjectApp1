@@ -60,7 +60,7 @@ app.MapGet(
             return Results.NotFound();
         }
         // If audio data is found then sets the content type to audio/mpeg and returns the audio binary data.
-        return Results.File(audioData.AudioBinaryData, "audio/mpeg");
+        return Results.File(audioData.AudioBinaryData, "audio/mpeg", enableRangeProcessing: true); // Adding enableRangeProcessing allows for streaming of audio data in Chromium browsers and for the audio bar to skip successfully.
     });
 
 app.Run();

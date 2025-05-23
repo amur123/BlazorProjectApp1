@@ -1,0 +1,50 @@
+name: Create and publish a Docker image
+
+on:
+  release:
+    types: [published] # When the version release is published it triggers the workflow.
+  workflow_dispatch: # Allows for manually triggering the workflow.
+
+env:
+  REGISTRY: docker.io # For Docker Hub.
+  IMAGE_NAME: ammarmuranovic/blazorprojectapp1-docker-repo # Name of my Docker Hub repo.
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU # QEMU is needed for building Linux.
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3 # Use version 3 the latest version.
+
+      - name: Log in to Docker Hub # Authenticating with GitHub Actions secrets.
+        uses: docker/login-action@v3 # Use v3 for latest version
+        with:
+          username: ${{ secrets.DOCKERUSERNAME }} # Use my DOCKERUSERNAME secret.
+          password: ${{ secrets.DOCKERHUBTOKEN }} # Use my DOCKERHUBTOKEN secret.
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5 # Use version 5 the latest version.
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+
+      - name: Build and push Docker image # The Docker image is built here and uploaded.
+        uses: docker/build-push-action@v5 # Use version 5 the latest version.
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: . # Specifices that the Dockerfile is in root directory.
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
