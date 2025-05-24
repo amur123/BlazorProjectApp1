@@ -12,7 +12,7 @@ window.audioPlayer = {
     // If a different audio is playing stop it.
     this.audio = new Audio(url)
     this.audio.play()
-    // Add event listener to update progress bar.
+    // Adds event listener to update progress bar.
     this.audio.addEventListener('timeupdate', () => {
       this.updateProgress()
     })
@@ -28,11 +28,11 @@ window.audioPlayer = {
     if (this.audio) {
       this.audio.pause() // Pauses without resetting position.
       this.audio.currentTime = 0 // Resets position to start.
-      this.updateProgress() // Update progress bar.
+      this.updateProgress() // Updates the progress bar.
     }
   },
 
-  // Event listeners for play, pause, and stop buttons to implement progress bar.
+  // Event listeners for play, pause, and stop buttons to implement audio progress bar.
   updateProgress: function () {
     const progressBar = document.getElementById('audioProgressBar')
     if (!progressBar || !this.audio?.duration) return

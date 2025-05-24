@@ -32,7 +32,7 @@ h1:focus {
     outline: 1px solid #e50000;
 }
 
-/* Changed validation messages from red to white for higher contrast */
+/* Changed validation messages from red to white for higher contrast and accessibility */
 .validation-message {
     color: white !important;
 }
@@ -150,7 +150,7 @@ main, .content, .main-content, .card-body {
     padding: 2rem;
 }
 
-/* Styles the top utility bar (ie: Loginm Logoff, About) */
+/* Styles the top utility bar (ie: Login, Logoff, About) */
 .top-bar-black {
     background-color: #000 !important;
     color: white !important;

@@ -2,6 +2,7 @@
 See below for more information and instructions please.
 * For best performance use Mozilla Firefox browser.
 * App URL: https://localhost:7222/
+* Use DB Browser to see BlazorProjectApp.db data.
 
 ___
 
@@ -37,13 +38,15 @@ ___
 
 ```
 BlazorProjectApp1/
-├── github/                           # Github workflow YAML files.
-├── BlazorProjectApp1/                # Core logic and razor pages.
-├── BlazorProjectApp1.Tests/          # Unit tests.
-├── .gitignore                        # Git file/paths to ignore.
-├── .styleignore                      # Ignore files/paths list for linter. 
-├── BlazorProjectApp1.sln             # Solution file.
-├── README.md                         # README documentation.
+├── github/                        # Github workflow YAML files.
+├── BlazorProjectApp1/             # Core logic and razor pages.
+├── BlazorProjectApp1.Tests/       # Unit tests.
+├── .dockerignore                  # File/paths for Docker build process to ignore.
+├── .gitignore                     # Git file/paths to ignore.
+├── .styleignore                   # Ignore files/paths list for linter. 
+├── BlazorProjectApp1.sln          # Solution file.
+├── Dockerfile                     # Builds the Blazor app creating image for Docker Hub.
+├── README.md                      # README documentation.
 
 ```
 ___
@@ -64,7 +67,7 @@ ___
 - Audio progress bar.
 - Search bar.
 - CI/CD workflows.
-- Initial Docker implementation.
+- Docker automation implemented pushing image to Docker Hub.
 - Scalability and prepared for further development.
 ___
 
@@ -87,4 +90,4 @@ ___
 - bUnit: Testing framework for unit tests for Blazor.
 ___
 
-This repo utilises [Tesseract](https://www.nuget.org/packages/tesseract/) and [EdgeTTS](https://www.nuget.org/packages/EdgeTTS).
+This repo utilises [Tesseract](https://github.com/charlesw/tesseract/) and [EdgeTTS](https://github.com/fysh711426/EdgeTTS).
